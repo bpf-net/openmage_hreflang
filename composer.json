@@ -1,0 +1,17 @@
+{
+  "name": "bpf/openmage_hreflang",
+  "description": "Hreflang alternate links for OpenMage multi-store setups.",
+  "license": "OSL-3.0",
+  "type": "magento-module",
+  "keywords": ["openmage", "magento", "hreflang", "seo"],
+  "authors": [
+    {
+      "name": "Łukasz Wojciechowski"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "openmage/magento-lts": "^20.0",
+    "magento-hackathon/magento-composer-installer": "^3.0 || ^4.0"
+  }
+}

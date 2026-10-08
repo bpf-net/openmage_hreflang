@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Bpf_Hreflang>
+            <version>0.1.0</version>
+        </Bpf_Hreflang>
+    </modules>
+</config>

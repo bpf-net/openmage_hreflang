@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Bpf_Hreflang>
+            <active>true</active>
+            <codePool>local</codePool>
+        </Bpf_Hreflang>
+    </modules>
+</config>
