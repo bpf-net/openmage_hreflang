@@ -3,7 +3,7 @@
     <modules>
         <Bpf_Hreflang>
             <active>true</active>
-            <codePool>local</codePool>
+            <codePool>community</codePool>
         </Bpf_Hreflang>
     </modules>
 </config>
