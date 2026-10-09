@@ -70,6 +70,24 @@ class Bpf_Hreflang_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
+     * Store views that are potential alternates of the given one (including itself):
+     * all frontend store views, or those of the same website, depending on the group scope.
+     *
+     * @param null|bool|int|string|Mage_Core_Model_Store $store
+     * @return array<int, Mage_Core_Model_Store> keyed by store ID
+     */
+    public function getGroupStores($store = null): array
+    {
+        $app = $this->_getApp();
+
+        if ($this->getGroupScope() === self::GROUP_SCOPE_GLOBAL) {
+            return $app->getStores();
+        }
+
+        return $app->getStore($store)->getWebsite()->getStores();
+    }
+
+    /**
      * Store view used as x-default for the given store's website; null when not configured.
      *
      * @param null|bool|int|string|Mage_Core_Model_Store $store
@@ -114,5 +132,10 @@ class Bpf_Hreflang_Helper_Data extends Mage_Core_Helper_Abstract
     protected function _getConfig(string $path, $store = null)
     {
         return Mage::getStoreConfig($path, $store);
+    }
+
+    protected function _getApp(): Mage_Core_Model_App
+    {
+        return Mage::app();
     }
 }

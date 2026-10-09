@@ -1,13 +1,20 @@
 <?php
 
 /**
- * Normalizes the hreflang code entered for a store view and rejects invalid ones.
+ * Normalizes the hreflang code entered for a store view, rejects invalid ones
+ * and codes already used by another store view of the same alternates group.
  */
 class Bpf_Hreflang_Model_System_Config_Backend_LocaleCode extends Mage_Core_Model_Config_Data
 {
     protected function _beforeSave()
     {
-        $this->setValue($this->_prepareValue((string) $this->getValue()));
+        $code = $this->_prepareValue((string) $this->getValue());
+
+        if ($code !== '' && $this->getScope() === 'stores') {
+            $this->_assertUniqueInGroup($code, (int) $this->getScopeId());
+        }
+
+        $this->setValue($code);
 
         return parent::_beforeSave();
     }
@@ -28,6 +35,28 @@ class Bpf_Hreflang_Model_System_Config_Backend_LocaleCode extends Mage_Core_Mode
         }
 
         return $code;
+    }
+
+    /**
+     * @throws Mage_Core_Exception when another store view of the group already uses the code
+     */
+    protected function _assertUniqueInGroup(string $code, int $storeId): void
+    {
+        $helper = $this->_getHelper();
+
+        foreach ($helper->getGroupStores($storeId) as $store) {
+            if ((int) $store->getId() === $storeId) {
+                continue;
+            }
+
+            if ($helper->getLocaleCode($store) === $code) {
+                Mage::throwException($helper->__(
+                    'Hreflang code "%s" is already used by store view "%s". Store views listed as alternates of each other need different codes.',
+                    $code,
+                    $store->getName(),
+                ));
+            }
+        }
     }
 
     protected function _getHelper(): Bpf_Hreflang_Helper_Data

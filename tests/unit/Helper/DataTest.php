@@ -134,6 +134,52 @@ class Bpf_Hreflang_Helper_DataTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<int, Mage_Core_Model_Store> $allStores
+     * @param array<int, Mage_Core_Model_Store> $websiteStores stores of the current store's website
+     */
+    private function helperWithStores(string $groupScope, array $allStores, array $websiteStores): Bpf_Hreflang_Helper_Data
+    {
+        $website = $this->createMock(Mage_Core_Model_Website::class);
+        $website->method('getStores')->willReturn($websiteStores);
+        $currentStore = $this->createMock(Mage_Core_Model_Store::class);
+        $currentStore->method('getWebsite')->willReturn($website);
+
+        $app = $this->createMock(Mage_Core_Model_App::class);
+        $app->method('getStores')->willReturn($allStores);
+        $app->method('getStore')->willReturn($currentStore);
+
+        $helper = $this->getMockBuilder(Bpf_Hreflang_Helper_Data::class)
+            ->onlyMethods(['_getConfig', '_getApp'])
+            ->getMock();
+        $helper->method('_getConfig')->willReturnCallback(
+            static fn (string $path) => $path === Bpf_Hreflang_Helper_Data::XML_PATH_GROUP_SCOPE ? $groupScope : null,
+        );
+        $helper->method('_getApp')->willReturn($app);
+
+        return $helper;
+    }
+
+    public function testGetGroupStoresReturnsWebsiteStoresForWebsiteScope(): void
+    {
+        $pl = new Mage_Core_Model_Store(['store_id' => 1]);
+        $en = new Mage_Core_Model_Store(['store_id' => 2]);
+        $uk = new Mage_Core_Model_Store(['store_id' => 3]);
+        $helper = $this->helperWithStores('website', [1 => $pl, 2 => $en, 3 => $uk], [1 => $pl, 2 => $en]);
+
+        $this->assertSame([1 => $pl, 2 => $en], $helper->getGroupStores(1));
+    }
+
+    public function testGetGroupStoresReturnsAllStoresForGlobalScope(): void
+    {
+        $pl = new Mage_Core_Model_Store(['store_id' => 1]);
+        $en = new Mage_Core_Model_Store(['store_id' => 2]);
+        $uk = new Mage_Core_Model_Store(['store_id' => 3]);
+        $helper = $this->helperWithStores('global', [1 => $pl, 2 => $en, 3 => $uk], [1 => $pl, 2 => $en]);
+
+        $this->assertSame([1 => $pl, 2 => $en, 3 => $uk], $helper->getGroupStores(1));
+    }
+
     public function testGetXDefaultStoreId(): void
     {
         $this->assertSame(3, $this->helper([Bpf_Hreflang_Helper_Data::XML_PATH_X_DEFAULT_STORE => '3'])->getXDefaultStoreId());
