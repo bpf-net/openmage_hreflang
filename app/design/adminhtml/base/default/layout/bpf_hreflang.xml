@@ -5,4 +5,14 @@
             <block type="bpf_hreflang/adminhtml_group" name="bpf_hreflang_group"/>
         </reference>
     </adminhtml_bpf_hreflang_group_index>
+
+    <adminhtml_bpf_hreflang_group_new>
+        <update handle="adminhtml_bpf_hreflang_group_edit"/>
+    </adminhtml_bpf_hreflang_group_new>
+
+    <adminhtml_bpf_hreflang_group_edit>
+        <reference name="content">
+            <block type="bpf_hreflang/adminhtml_group_edit" name="bpf_hreflang_group_edit"/>
+        </reference>
+    </adminhtml_bpf_hreflang_group_edit>
 </layout>

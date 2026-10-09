@@ -17,6 +17,9 @@ class Bpf_Hreflang_Model_Group extends Mage_Core_Model_Abstract
 {
     public const ENTITY_TYPE_CMS_PAGE = 'cms_page';
 
+    /** Registry key of the group edited in the admin. */
+    public const REGISTRY_KEY = 'current_bpf_hreflang_group';
+
     protected $_eventPrefix = 'bpf_hreflang_group';
 
     protected $_eventObject = 'group';

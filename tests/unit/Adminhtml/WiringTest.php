@@ -69,4 +69,23 @@ class Bpf_Hreflang_Adminhtml_WiringTest extends TestCase
         // The container renders block "<_blockGroup>/<_controller>_grid".
         $this->assertTrue(is_subclass_of(Bpf_Hreflang_Block_Adminhtml_Group_Grid::class, Mage_Adminhtml_Block_Widget_Grid::class));
     }
+
+    public function testEditAndNewPagesShowGroupForm(): void
+    {
+        $layout = simplexml_load_file(self::ROOT . '/app/design/adminhtml/base/default/layout/bpf_hreflang.xml');
+        $block = $layout->xpath('adminhtml_bpf_hreflang_group_edit/reference[@name="content"]/block')[0];
+
+        $this->assertSame('bpf_hreflang/adminhtml_group_edit', (string) $block['type']);
+        $this->assertSame('adminhtml_bpf_hreflang_group_edit', (string) $layout->adminhtml_bpf_hreflang_group_new->update['handle']);
+        $this->assertTrue(is_subclass_of(Bpf_Hreflang_Block_Adminhtml_Group_Edit::class, Mage_Adminhtml_Block_Widget_Form_Container::class));
+        // The form container renders block "<_blockGroup>/<_controller>_edit_form".
+        $this->assertTrue(is_subclass_of(Bpf_Hreflang_Block_Adminhtml_Group_Edit_Form::class, Mage_Adminhtml_Block_Widget_Form::class));
+    }
+
+    public function testControllerHasGroupActions(): void
+    {
+        foreach (['index', 'new', 'edit', 'save', 'delete'] as $action) {
+            $this->assertTrue(method_exists('Bpf_Hreflang_Adminhtml_Bpf_Hreflang_GroupController', $action . 'Action'), $action);
+        }
+    }
 }
