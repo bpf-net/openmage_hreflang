@@ -10,8 +10,14 @@ class Bpf_Hreflang_Model_Resolver_CmsTest extends TestCase
      * @param array<int, array{identifier: string, is_active: bool, store_ids: list<int>}> $pages
      * @return Bpf_Hreflang_Model_Resolver_Cms&MockObject
      */
-    private function resolver(?int $currentPageId, array $groupItems, array $pages): Bpf_Hreflang_Model_Resolver_Cms
-    {
+    private function resolver(
+        ?int $currentPageId,
+        array $groupItems,
+        array $pages,
+        int $currentStoreId = 1,
+        string $currentIdentifier = 'some-page',
+        string $noRouteIdentifier = 'no-route',
+    ): Bpf_Hreflang_Model_Resolver_Cms {
         $groupResource = $this->createMock(Bpf_Hreflang_Model_Resource_Group::class);
         $groupResource->method('getEntityGroupItems')->willReturn($groupItems);
 
@@ -21,9 +27,12 @@ class Bpf_Hreflang_Model_Resolver_CmsTest extends TestCase
         );
 
         $resolver = $this->getMockBuilder(Bpf_Hreflang_Model_Resolver_Cms::class)
-            ->onlyMethods(['_getCurrentPageId', '_getPagesData', '_getGroupResource', '_getUrlModel'])
+            ->onlyMethods(['_getCurrentPageId', '_getPagesData', '_getGroupResource', '_getUrlModel', '_getCurrentStoreId', '_getCurrentPageIdentifier', '_getNoRouteIdentifier'])
             ->getMock();
         $resolver->method('_getCurrentPageId')->willReturn($currentPageId);
+        $resolver->method('_getCurrentStoreId')->willReturn($currentStoreId);
+        $resolver->method('_getCurrentPageIdentifier')->willReturn($currentIdentifier);
+        $resolver->method('_getNoRouteIdentifier')->willReturn($noRouteIdentifier);
         $resolver->method('_getPagesData')->willReturnCallback(
             static fn (array $ids) => array_intersect_key($pages, array_flip($ids)),
         );
@@ -148,5 +157,41 @@ class Bpf_Hreflang_Model_Resolver_CmsTest extends TestCase
 
         $this->assertSame('bpf_hreflang/resolver_cms', (string) $cms->class);
         $this->assertSame(['cms_page_view'], array_keys((array) $cms->actions));
+    }
+
+    public function testNoRoutePageAtItsOwnUrlIsNotResolved(): void
+    {
+        $resolver = $this->resolver(1, [], [1 => $this->page('no-route', [1, 2, 3])], currentIdentifier: 'no-route');
+
+        $this->assertFalse($resolver->canResolve($this->request()));
+    }
+
+    public function testNoRoutePageIsCheckedPerStore(): void
+    {
+        $resolver = $this->resolver(1, [], [], currentIdentifier: 'not-found-de', noRouteIdentifier: 'no-route');
+
+        $this->assertTrue($resolver->canResolve($this->request()));
+    }
+
+    public function testGroupedPageIsResolvedInStoreWhereItIsTheVersion(): void
+    {
+        $resolver = $this->resolver(4, [1 => 3, 2 => 4], [], currentStoreId: 2);
+
+        $this->assertTrue($resolver->canResolve($this->request()));
+    }
+
+    public function testGroupedPageIsNotResolvedWhereGroupHasAnotherPage(): void
+    {
+        // Page 4 is the French version, but it is also shown in the English store, whose version is page 3.
+        $resolver = $this->resolver(4, [1 => 3, 2 => 4], [], currentStoreId: 1);
+
+        $this->assertFalse($resolver->canResolve($this->request()));
+    }
+
+    public function testGroupedPageIsNotResolvedInStoreOutsideTheGroup(): void
+    {
+        $resolver = $this->resolver(4, [1 => 3, 2 => 4], [], currentStoreId: 3);
+
+        $this->assertFalse($resolver->canResolve($this->request()));
     }
 }

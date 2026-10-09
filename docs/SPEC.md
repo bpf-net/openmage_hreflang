@@ -156,6 +156,8 @@ Zasady:
 - Model „wersja bazowa + przypisane tłumaczenia”: w adminie wybierasz stronę bazową i dla każdego store view przypisujesz jej odpowiednik.
 - Strona CMS przypisana do wszystkich store view (`store_id = 0`) jest automatycznie swoją własną parą w każdym store (ten sam identyfikator, URL danego store) i nie wymaga grupy.
 - Usunięcie strony CMS usuwa jej wpisy z grup (observer na `cms_page_delete_after`).
+- Strona należąca do grupy dostaje tagi tylko w store view, któremu grupa przypisuje właśnie tę stronę. Jeśli ta sama strona jest widoczna też w innym store view (np. przypisana do wszystkich), tam tagów nie ma — inaczej wskazywałaby cudzą stronę jako swoją wersję językową.
+- Strona CMS ustawiona jako strona 404 danego store (`web/default/cms_no_route`) nie dostaje tagów także po wejściu na jej własny adres (akcja `cms_page_view`, nie `cms_index_noRoute`).
 - Heurystyki parowania (ta sama data, zdjęcie, tytuł) są celowo pominięte: w praktyce dają zbyt dużo błędnych par.
 
 ### 5.5 Blok i cache

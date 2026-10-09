@@ -10,9 +10,26 @@ class Bpf_Hreflang_Model_Resolver_Cms implements Bpf_Hreflang_Model_Resolver_Int
     /** @var array<int, array<int, int>> page ID => versions (store ID => page ID) */
     protected array $_groupItems = [];
 
+    /**
+     * Not for the store's 404 page opened at its own URL (it is the no-route content), and not for
+     * a page shown in a store view where its translation group has another page: there the page
+     * is not a version of the group, so it would point to a different page as its own language.
+     */
     public function canResolve(Mage_Core_Controller_Request_Http $request): bool
     {
-        return $this->_getCurrentPageId() !== null;
+        $pageId = $this->_getCurrentPageId();
+        if ($pageId === null) {
+            return false;
+        }
+
+        $storeId = $this->_getCurrentStoreId();
+        if ($this->_getCurrentPageIdentifier() === $this->_getNoRouteIdentifier($storeId)) {
+            return false;
+        }
+
+        $versions = $this->_getVersions($pageId);
+
+        return $versions === [] || ($versions[$storeId] ?? null) === $pageId;
     }
 
     public function resolve(Mage_Core_Controller_Request_Http $request, array $storeIds): array
@@ -88,6 +105,24 @@ class Bpf_Hreflang_Model_Resolver_Cms implements Bpf_Hreflang_Model_Resolver_Int
         $pageId = (int) Mage::getSingleton('cms/page')->getId();
 
         return $pageId > 0 ? $pageId : null;
+    }
+
+    protected function _getCurrentPageIdentifier(): string
+    {
+        return (string) Mage::getSingleton('cms/page')->getIdentifier();
+    }
+
+    protected function _getCurrentStoreId(): int
+    {
+        return (int) Mage::app()->getStore()->getId();
+    }
+
+    /**
+     * Identifier of the store's 404 page; the config value may carry a "|<page ID>" suffix.
+     */
+    protected function _getNoRouteIdentifier(int $storeId): string
+    {
+        return explode('|', (string) Mage::getStoreConfig(Mage_Cms_Helper_Page::XML_PATH_NO_ROUTE_PAGE, $storeId))[0];
     }
 
     /**
