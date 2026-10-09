@@ -127,14 +127,23 @@ Resolvery wbudowane:
 
 Ogólny mechanizm ręcznego parowania, używany przez resolver CMS i dostępny dla resolverów z innych modułów (np. blog).
 
+Tabela `bpf_hreflang_group` (decyzja D3 z planu):
+
+| Kolumna | Typ | Opis |
+| --- | --- | --- |
+| `group_id` | int unsigned, PK, auto increment | |
+| `entity_type` | varchar(32), indeks | Typ encji grupy, np. `cms_page`. |
+| `base_entity_id` | int unsigned, null | Encja, od której utworzono grupę (strona bazowa w adminie). |
+| `created_at`, `updated_at` | timestamp | Daty utworzenia i modyfikacji (grid w adminie). |
+
 Tabela `bpf_hreflang_group_item`:
 
 | Kolumna | Typ | Opis |
 | --- | --- | --- |
 | `item_id` | int, PK, auto increment | |
-| `group_id` | int, indeks | Identyfikator grupy tłumaczeń. |
+| `group_id` | int unsigned, FK `bpf_hreflang_group` (cascade delete) | Identyfikator grupy tłumaczeń. |
 | `entity_type` | varchar(32) | Typ encji, np. `cms_page`. |
-| `entity_id` | int | ID encji. |
+| `entity_id` | int unsigned | ID encji. |
 | `store_id` | smallint unsigned, FK `core_store` (cascade delete) | Store view tej wersji. |
 
 Ograniczenia:

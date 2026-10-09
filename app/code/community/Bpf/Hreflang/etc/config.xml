@@ -2,15 +2,34 @@
 <config>
     <modules>
         <Bpf_Hreflang>
-            <version>0.1.1</version>
+            <version>1.0.0</version>
         </Bpf_Hreflang>
     </modules>
     <global>
         <models>
             <bpf_hreflang>
                 <class>Bpf_Hreflang_Model</class>
+                <resourceModel>bpf_hreflang_resource</resourceModel>
             </bpf_hreflang>
+            <bpf_hreflang_resource>
+                <class>Bpf_Hreflang_Model_Resource</class>
+                <entities>
+                    <group>
+                        <table>bpf_hreflang_group</table>
+                    </group>
+                    <group_item>
+                        <table>bpf_hreflang_group_item</table>
+                    </group_item>
+                </entities>
+            </bpf_hreflang_resource>
         </models>
+        <resources>
+            <bpf_hreflang_setup>
+                <setup>
+                    <module>Bpf_Hreflang</module>
+                </setup>
+            </bpf_hreflang_setup>
+        </resources>
         <blocks>
             <bpf_hreflang>
                 <class>Bpf_Hreflang_Block</class>
