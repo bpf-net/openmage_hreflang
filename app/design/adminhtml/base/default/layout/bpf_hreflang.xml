@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <layout version="0.1.0">
     <adminhtml_bpf_hreflang_group_index>
+        <reference name="content">
+            <block type="bpf_hreflang/adminhtml_group" name="bpf_hreflang_group"/>
+        </reference>
     </adminhtml_bpf_hreflang_group_index>
 </layout>

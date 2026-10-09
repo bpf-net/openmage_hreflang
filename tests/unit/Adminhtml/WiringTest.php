@@ -58,4 +58,15 @@ class Bpf_Hreflang_Adminhtml_WiringTest extends TestCase
         $this->assertFileExists(self::ROOT . '/' . $path);
         $this->assertStringContainsString($path, (string) file_get_contents(self::ROOT . '/modman'));
     }
+
+    public function testIndexPageShowsGroupGrid(): void
+    {
+        $layout = simplexml_load_file(self::ROOT . '/app/design/adminhtml/base/default/layout/bpf_hreflang.xml');
+        $block = $layout->xpath('adminhtml_bpf_hreflang_group_index/reference[@name="content"]/block')[0];
+
+        $this->assertSame('bpf_hreflang/adminhtml_group', (string) $block['type']);
+        $this->assertTrue(is_subclass_of(Bpf_Hreflang_Block_Adminhtml_Group::class, Mage_Adminhtml_Block_Widget_Grid_Container::class));
+        // The container renders block "<_blockGroup>/<_controller>_grid".
+        $this->assertTrue(is_subclass_of(Bpf_Hreflang_Block_Adminhtml_Group_Grid::class, Mage_Adminhtml_Block_Widget_Grid::class));
+    }
 }
