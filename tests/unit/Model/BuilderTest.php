@@ -20,6 +20,12 @@ class Bpf_Hreflang_Model_BuilderTest extends TestCase
 
     private string $groupScope = Bpf_Hreflang_Helper_Data::GROUP_SCOPE_WEBSITE;
 
+    /** @var list<string> excluded_actions as returned by the helper (defaults from SPEC 6.4) */
+    private array $excludedActions = [
+        'cms_index_noRoute', 'cms_index_defaultNoRoute', 'catalogsearch_*', 'checkout_*',
+        'customer_*', 'wishlist_*', 'sales_*', 'review_*', 'contacts_*',
+    ];
+
     private function addStore(int $id, string $code, bool $active = true, bool $enabled = true, bool $noindex = false): Mage_Core_Model_Store
     {
         $store = new Mage_Core_Model_Store(['store_id' => $id, 'is_active' => $active ? 1 : 0, 'name' => "Store {$id}"]);
@@ -36,8 +42,9 @@ class Bpf_Hreflang_Model_BuilderTest extends TestCase
     {
         $settings = &$this->settings;
         $helper = $this->getMockBuilder(Bpf_Hreflang_Helper_Data::class)
-            ->onlyMethods(['getGroupStores', 'isEnabled', 'getLocaleCode', 'isStoreNoindex', 'getXDefaultStoreId', 'getGroupScope'])
+            ->onlyMethods(['getGroupStores', 'isEnabled', 'getLocaleCode', 'isStoreNoindex', 'getXDefaultStoreId', 'getGroupScope', 'getExcludedActions'])
             ->getMock();
+        $helper->method('getExcludedActions')->willReturnCallback(fn () => $this->excludedActions);
         $helper->method('getXDefaultStoreId')->willReturnCallback(
             fn ($scope) => $this->xDefaultByScope[$scope instanceof Mage_Core_Model_Store ? 'website' : 'default'] ?? null,
         );
@@ -423,5 +430,95 @@ class Bpf_Hreflang_Model_BuilderTest extends TestCase
         $builder->expects($this->once())->method('_log');
 
         $this->assertSame(['pl' => 'a', 'en' => 'b'], $this->alternates([1 => 'a', 2 => 'b', 3 => 'c'], $pl, $builder));
+    }
+
+    /**
+     * @param array<string, mixed> $query
+     * @return Mage_Core_Controller_Request_Http&MockObject
+     */
+    private function request(array $query = []): Mage_Core_Controller_Request_Http
+    {
+        $request = $this->createMock(Mage_Core_Controller_Request_Http::class);
+        $request->method('getQuery')->willReturn($query);
+
+        return $request;
+    }
+
+    /**
+     * @dataProvider actionProvider
+     */
+    public function testIsActionExcluded(string $action, bool $expected): void
+    {
+        $this->assertSame($expected, $this->builder()->isActionExcluded($action));
+    }
+
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public function actionProvider(): array
+    {
+        return [
+            '404 page' => ['cms_index_noRoute', true],
+            'default 404 page' => ['cms_index_defaultNoRoute', true],
+            'search results' => ['catalogsearch_result_index', true],
+            'advanced search' => ['catalogsearch_advanced_result', true],
+            'cart' => ['checkout_cart_index', true],
+            'customer account' => ['customer_account_index', true],
+            'case-insensitive' => ['CMS_INDEX_NOROUTE', true],
+            'product page' => ['catalog_product_view', false],
+            'category page' => ['catalog_category_view', false],
+            'cms page' => ['cms_page_view', false],
+            'home page' => ['cms_index_index', false],
+            'exact entry is not a prefix' => ['cms_index_noRouteSomething', false],
+            'prefix needs its underscore' => ['checkoutx_cart_index', false],
+        ];
+    }
+
+    public function testEmptyExclusionListExcludesNothing(): void
+    {
+        $this->excludedActions = [];
+
+        $this->assertFalse($this->builder()->isActionExcluded('cms_index_noRoute'));
+    }
+
+    /**
+     * @dataProvider queryProvider
+     * @param array<string, mixed> $query
+     */
+    public function testHasSignificantQueryParams(array $query, bool $expected): void
+    {
+        $this->assertSame($expected, $this->builder()->hasSignificantQueryParams($this->request($query)));
+    }
+
+    /**
+     * @return array<string, array{array<string, mixed>, bool}>
+     */
+    public function queryProvider(): array
+    {
+        return [
+            'no query' => [[], false],
+            'tracking only' => [['utm_source' => 'x', 'utm_campaign' => 'y', 'gclid' => 'z', 'fbclid' => 'f'], false],
+            'store switch' => [['___store' => 'en', '___from_store' => 'pl'], false],
+            'session id' => [['SID' => 'abc'], false],
+            'layered filter' => [['color' => '12'], true],
+            'paging' => [['p' => '2'], true],
+            'sorting with tracking' => [['dir' => 'asc', 'utm_source' => 'x'], true],
+        ];
+    }
+
+    public function testExcludedPageGetsNoResolver(): void
+    {
+        $builder = $this->builderWithResolvers(
+            [
+                'home' => ['class' => 'x/home', 'actions' => ['cms_index_index', 'cms_index_noroute']],
+                'product' => ['class' => 'x/product', 'actions' => ['catalog_product_view']],
+            ],
+            ['x/home' => $this->resolver(), 'x/product' => $this->resolver()],
+        );
+
+        $this->assertNull($builder->getResolverForRequest('cms_index_noRoute', $this->request()));
+        $this->assertNull($builder->getResolverForRequest('catalog_product_view', $this->request(['color' => '1'])));
+        $this->assertNotNull($builder->getResolverForRequest('catalog_product_view', $this->request(['utm_source' => 'x'])));
+        $this->assertNotNull($builder->getResolverForRequest('cms_index_index', $this->request()));
     }
 }

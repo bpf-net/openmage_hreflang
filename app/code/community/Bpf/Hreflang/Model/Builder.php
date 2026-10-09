@@ -18,6 +18,75 @@ class Bpf_Hreflang_Model_Builder
     protected ?array $_eventResolvers = null;
 
     /**
+     * Query parameters that do not create a different page (tracking, store switching, session),
+     * so they do not prevent hreflang tags. Entries ending in "*" are prefixes.
+     */
+    public const IGNORED_QUERY_PARAMS = [
+        'utm_*', 'gclid', 'gbraid', 'wbraid', 'fbclid', 'msclkid', '___store', '___from_store', 'SID',
+    ];
+
+    /**
+     * Resolver for the page, or null when the page gets no hreflang tags: excluded action,
+     * query parameters (filters, sorting, paging) or no resolver handling it.
+     */
+    public function getResolverForRequest(string $fullActionName, Mage_Core_Controller_Request_Http $request): ?Bpf_Hreflang_Model_Resolver_Interface
+    {
+        if ($this->isExcluded($fullActionName, $request)) {
+            return null;
+        }
+
+        return $this->getResolver($fullActionName, $request);
+    }
+
+    public function isExcluded(string $fullActionName, Mage_Core_Controller_Request_Http $request): bool
+    {
+        return $this->isActionExcluded($fullActionName) || $this->hasSignificantQueryParams($request);
+    }
+
+    /**
+     * Whether the full action name matches an entry of excluded_actions (case-insensitive;
+     * a trailing "*" matches a prefix, e.g. "checkout_*").
+     */
+    public function isActionExcluded(string $fullActionName): bool
+    {
+        return $this->_matchesAny($fullActionName, $this->_getHelper()->getExcludedActions());
+    }
+
+    /**
+     * Whether the request has GET parameters other than IGNORED_QUERY_PARAMS. Pages with
+     * layered navigation filters, sorting or paging get no tags in 1.0.
+     */
+    public function hasSignificantQueryParams(Mage_Core_Controller_Request_Http $request): bool
+    {
+        foreach (array_keys((array) $request->getQuery()) as $param) {
+            if (!$this->_matchesAny((string) $param, self::IGNORED_QUERY_PARAMS)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param list<string> $patterns exact names or prefixes ending in "*"
+     */
+    protected function _matchesAny(string $name, array $patterns): bool
+    {
+        $name = strtolower($name);
+        foreach ($patterns as $pattern) {
+            $pattern = strtolower($pattern);
+            if (str_ends_with($pattern, '*')
+                ? str_starts_with($name, substr($pattern, 0, -1))
+                : $name === $pattern
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * The first resolver that handles the request: resolvers added through the event first
      * (asked through canResolve() only), then built-in ones declared for the action.
      */

@@ -207,7 +207,7 @@ contacts_*
 
 ### 6.6 Zgodność z canonical i parametry
 - URL w hreflang musi być równy canonical danej wersji (p. 5.6).
-- Strony z parametrami zapytania (filtry warstwowe, sortowanie, paginacja) nie emitują tagów w 1.0.
+- Strony z parametrami zapytania (filtry warstwowe, sortowanie, paginacja) nie emitują tagów w 1.0. Nie liczą się parametry, które nie tworzą innej strony: śledzące (`utm_*`, `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`), przełączania store'a (`___store`, `___from_store`) i sesji (`SID`).
 
 ### 6.7 x-default
 Dodawany, gdy skonfigurowany store view `x_default_store` jest wśród dostępnych wersji strony; wskazuje URL tej wersji. Jeśli ta wersja jest niedostępna, `x-default` jest pomijany. Przy `group_scope = global` wartość jest czytana z poziomu default (ustawienie per website jest ignorowane), bo wersje z różnych website'ów muszą wskazywać ten sam `x-default`. Dla strony głównej przy trybie bez kodu sklepu `x-default` to zwykle `/`.
