@@ -70,6 +70,12 @@
                         <catalog_category_view/>
                     </actions>
                 </category>
+                <cms>
+                    <class>bpf_hreflang/resolver_cms</class>
+                    <actions>
+                        <cms_page_view/>
+                    </actions>
+                </cms>
             </resolvers>
         </bpf_hreflang>
     </global>
