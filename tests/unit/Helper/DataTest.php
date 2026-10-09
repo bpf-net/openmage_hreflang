@@ -207,6 +207,30 @@ class Bpf_Hreflang_Helper_DataTest extends TestCase
         $this->assertSame([1 => $pl, 2 => $en, 3 => $uk], $helper->getGroupStores(1));
     }
 
+    /**
+     * @dataProvider robotsProvider
+     */
+    public function testIsStoreNoindex(?string $robots, bool $expected): void
+    {
+        $helper = $this->helper([Bpf_Hreflang_Helper_Data::CONFIG_PATH_DEFAULT_ROBOTS => $robots]);
+
+        $this->assertSame($expected, $helper->isStoreNoindex());
+    }
+
+    /**
+     * @return array<string, array{?string, bool}>
+     */
+    public function robotsProvider(): array
+    {
+        return [
+            'index' => ['INDEX,FOLLOW', false],
+            'noindex' => ['NOINDEX,NOFOLLOW', true],
+            'noindex follow' => ['NOINDEX,FOLLOW', true],
+            'lowercase' => ['noindex,follow', true],
+            'not set' => [null, false],
+        ];
+    }
+
     public function testGetXDefaultStoreId(): void
     {
         $this->assertSame(3, $this->helper([Bpf_Hreflang_Helper_Data::XML_PATH_X_DEFAULT_STORE => '3'])->getXDefaultStoreId());

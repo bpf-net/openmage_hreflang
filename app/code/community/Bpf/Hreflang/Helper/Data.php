@@ -9,6 +9,9 @@ class Bpf_Hreflang_Helper_Data extends Mage_Core_Helper_Abstract
     public const XML_PATH_EXCLUDED_ACTIONS = 'bpf_hreflang/general/excluded_actions';
     public const XML_PATH_ROOT_STORES = 'bpf_hreflang/url/root_stores';
 
+    /** Core setting read by the module; XML_PATH_* constants are reserved for the module's own fields. */
+    public const CONFIG_PATH_DEFAULT_ROBOTS = 'design/head/default_robots';
+
     public const GROUP_SCOPE_WEBSITE = 'website';
     public const GROUP_SCOPE_GLOBAL = 'global';
 
@@ -97,6 +100,16 @@ class Bpf_Hreflang_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
         return isset(self::$_isoRegions[$code]);
+    }
+
+    /**
+     * Whether the store view's default robots (design/head/default_robots) keep it out of the index.
+     *
+     * @param null|bool|int|string|Mage_Core_Model_Store $store
+     */
+    public function isStoreNoindex($store = null): bool
+    {
+        return stripos((string) $this->_getConfig(self::CONFIG_PATH_DEFAULT_ROBOTS, $store), 'NOINDEX') !== false;
     }
 
     /**
