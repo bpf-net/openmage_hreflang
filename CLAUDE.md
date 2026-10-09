@@ -35,12 +35,14 @@ Host PHP lacks `ext-dom`, so PHP and Composer run in Docker via `bin/php` and `b
 
 ```bash
 bin/composer install
-bin/php vendor/bin/phpunit                        # unit suite
+bin/composer check                                # lint + phpstan + test
+bin/composer lint                                 # parallel-lint over app, bin, tests
+bin/composer phpstan
+bin/composer test                                 # PHPUnit unit suite
 bin/php vendor/bin/phpunit --filter <TestName>    # single test
-bin/php vendor/bin/phpstan analyse
 ```
 
-`tests/bootstrap.php` loads `vendor/openmage/magento-lts/app/Mage.php` without `Mage::app()` and puts this repo's `app/code/community` first on the include path. Composer's post-install/update hook runs `bin/link-module.php`, which symlinks the module into `vendor/openmage/magento-lts` per `modman` — PHPStan (`macopedia/phpstan-magento1`) reads module config from that root to resolve `bpf_hreflang/…` aliases; rerun `bin/composer run-script post-install-cmd` after changing `modman`. Composer scripts (`lint`, `phpstan`, `test`) come in PLAN 0.5.
+`tests/bootstrap.php` loads `vendor/openmage/magento-lts/app/Mage.php` without `Mage::app()` and puts this repo's `app/code/community` first on the include path. Composer's post-install/update hook runs `bin/link-module.php`, which symlinks the module into `vendor/openmage/magento-lts` per `modman` — PHPStan (`macopedia/phpstan-magento1`) reads module config from that root to resolve `bpf_hreflang/…` aliases; rerun `bin/composer run-script post-install-cmd` after changing `modman`.
 
 Integration tests (PLAN 8.x) run against a docker-compose OpenMage + sample data instance via `BASE_URL`.
 
