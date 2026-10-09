@@ -196,3 +196,12 @@ Każdy przypadek z p. 8.2 SPEC jako osobny commit:
 | 7. Wykluczenia | 3.5, 4.2, 3.2 (store `NOINDEX`) |
 | 8. Self-reference i zwrotność | 3.4 |
 | 9. Event rozszerzeń | 3.3 |
+
+## Na później
+
+Luki zauważone w trakcie prac; do zaplanowania jako osobne commity.
+
+| # | Luka | Skąd | Propozycja |
+| --- | --- | --- | --- |
+| L1 | Zmiana `group_scope` z `website` na `global` nie sprawdza kolizji kodów języka, które wtedy powstają (np. `en` w dwóch website). Walidacja działa tylko przy zapisie `locale_code`. | 1.6 | Backend model dla `group_scope`: przy przejściu na `global` sprawdzić unikalność kodów wszystkich store view i odrzucić zapis z listą kolizji. |
+| L2 | `Helper::getGroupStores()` korzysta z `Mage::app()` (store'y, website), więc jest pokryty tylko testem na mockach. | 1.6 | Sprawdzić w testach integracyjnych (8.x) na prawdziwych store'ach dla obu wartości `group_scope`. |
