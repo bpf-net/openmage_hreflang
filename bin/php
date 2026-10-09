@@ -5,7 +5,9 @@ set -euo pipefail
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 php_version=${PHP_VERSION:-8.2}
-image="bpf-hreflang-dev:php${php_version}"
+# Tag includes the Dockerfile hash, so editing the Dockerfile rebuilds the image.
+dockerfile_hash=$(sha256sum "$root/.docker/php/Dockerfile" | cut -c1-12)
+image="bpf-hreflang-dev:php${php_version}-${dockerfile_hash}"
 
 if ! docker image inspect "$image" >/dev/null 2>&1; then
     docker build --quiet --build-arg "PHP_VERSION=${php_version}" -t "$image" "$root/.docker/php" >&2
