@@ -72,10 +72,10 @@ Niespójności i luki w specyfikacji, które wpływają na kolejne commity:
 **2.2** Tryb bez kodu sklepu: dla `root_stores` przy `web/url/use_store=1` usuwanie segmentu `/<kod>/` (tylko pierwszy segment ścieżki po bazie, bez ruszania domeny i dalszej części) + testy z kodem/bez kodu/HTTPS.
 `[Strip store code from URLs of root stores]`
 
-**2.3** `getProductUrl($productId, $storeId)`: request path z `core/url_rewrite` dla `id_path = product/<id>` (bez kategorii, zgodnie z canonical); brak rewrite ⇒ `null`.
+**2.3** `getProductUrls($productId, $storeIds)`: request path z `core/url_rewrite` dla `id_path = product/<id>` (bez kategorii, zgodnie z canonical), jednym zapytaniem dla wszystkich store'ów; rewrite systemowy wygrywa z własnym jak w `loadByIdPath()`; store bez rewrite jest pomijany.
 `[Build product URLs from store rewrites]`
 
-**2.4** `getCategoryUrl($categoryId, $storeId)`: analogicznie dla `category/<id>`.
+**2.4** `getCategoryUrls($categoryId, $storeIds)`: analogicznie dla `category/<id>`.
 `[Build category URLs from store rewrites]`
 
 **2.5** `getCmsPageUrl($identifier, $storeId)`: baza + identyfikator; strona ustawiona jako `web/default/cms_home_page` ⇒ URL strony głównej.

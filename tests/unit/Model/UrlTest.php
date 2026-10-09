@@ -86,4 +86,59 @@ class Bpf_Hreflang_Model_UrlTest extends TestCase
 
         $this->assertSame('http://example.com/', $model->getHomeUrl(1));
     }
+
+    /**
+     * @param array<string, array<int, string>> $rewrites id_path => [store ID => request path]
+     * @param list<int> $rootStoreIds
+     * @return Bpf_Hreflang_Model_Url&MockObject
+     */
+    private function urlModelWithRewrites(array $rewrites, array $rootStoreIds = []): Bpf_Hreflang_Model_Url
+    {
+        $model = $this->urlModel(
+            [$this->store(1, 'pl', true, true), $this->store(2, 'en', true, true), $this->store(3, 'at', false, true)],
+            $rootStoreIds,
+            ['_fetchRequestPaths'],
+        );
+        $model->method('_fetchRequestPaths')->willReturnCallback(
+            static fn (string $idPath, array $storeIds): array => array_intersect_key($rewrites[$idPath] ?? [], array_flip($storeIds)),
+        );
+
+        return $model;
+    }
+
+    public function testProductUrlsUseEachStoresRewrite(): void
+    {
+        $model = $this->urlModelWithRewrites(
+            ['product/42' => [1 => 'kubek.html', 2 => 'mug.html', 3 => 'becher.html']],
+            [1],
+        );
+
+        $this->assertSame([
+            1 => 'https://example.com/kubek.html',
+            2 => 'https://example.com/en/mug.html',
+            3 => 'http://example.com/at/becher.html',
+        ], $model->getProductUrls(42, [1, 2, 3]));
+    }
+
+    public function testProductUrlsSkipStoresWithoutRewrite(): void
+    {
+        $model = $this->urlModelWithRewrites(['product/42' => [2 => 'mug.html']]);
+
+        $this->assertSame([2 => 'https://example.com/en/mug.html'], $model->getProductUrls(42, [1, 2]));
+    }
+
+    public function testProductUrlsOnlyForRequestedStores(): void
+    {
+        $model = $this->urlModelWithRewrites(['product/42' => [1 => 'kubek.html', 2 => 'mug.html']]);
+
+        $this->assertSame([2 => 'https://example.com/en/mug.html'], $model->getProductUrls(42, [2]));
+    }
+
+    public function testFetchRequestPathsWithNoStoresSkipsTheDatabase(): void
+    {
+        $method = new ReflectionMethod(Bpf_Hreflang_Model_Url::class, '_fetchRequestPaths');
+        $method->setAccessible(true);
+
+        $this->assertSame([], $method->invoke(new Bpf_Hreflang_Model_Url(), 'product/42', []));
+    }
 }

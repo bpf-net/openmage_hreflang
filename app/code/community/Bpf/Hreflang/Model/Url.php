@@ -18,6 +18,62 @@ class Bpf_Hreflang_Model_Url
     }
 
     /**
+     * Canonical product URLs (without category path) from each store's URL rewrite.
+     * Stores without a rewrite for the product are left out.
+     *
+     * @param list<int> $storeIds
+     * @return array<int, string> store ID => absolute URL
+     */
+    public function getProductUrls(int $productId, array $storeIds): array
+    {
+        return $this->_getUrlsByIdPath('product/' . $productId, $storeIds);
+    }
+
+    /**
+     * @param list<int> $storeIds
+     * @return array<int, string> store ID => absolute URL
+     */
+    protected function _getUrlsByIdPath(string $idPath, array $storeIds): array
+    {
+        $urls = [];
+        foreach ($this->_fetchRequestPaths($idPath, $storeIds) as $storeId => $requestPath) {
+            $urls[$storeId] = $this->_getBaseUrl($storeId) . ltrim($requestPath, '/');
+        }
+
+        return $urls;
+    }
+
+    /**
+     * Request paths of an id_path in the given stores. Like Mage_Core_Model_Url_Rewrite::loadByIdPath(),
+     * a system rewrite wins over a custom one for the same store.
+     *
+     * @param list<int> $storeIds
+     * @return array<int, string> store ID => request path
+     */
+    protected function _fetchRequestPaths(string $idPath, array $storeIds): array
+    {
+        if ($storeIds === []) {
+            return [];
+        }
+
+        $resource = Mage::getSingleton('core/resource');
+        $connection = $resource->getConnection('core_read');
+        $select = $connection->select()
+            ->from($resource->getTableName('core/url_rewrite'), ['store_id', 'request_path'])
+            ->where('id_path = ?', $idPath)
+            ->where('store_id IN (?)', $storeIds)
+            ->order('is_system ' . Varien_Db_Select::SQL_ASC);
+
+        $paths = [];
+        foreach ($connection->fetchAll($select) as $row) {
+            // Rows are ordered so that the system rewrite comes last and overwrites a custom one.
+            $paths[(int) $row['store_id']] = (string) $row['request_path'];
+        }
+
+        return $paths;
+    }
+
+    /**
      * Base link URL of the store view. Root stores (bpf_hreflang/url/root_stores) are served
      * without the store code segment that web/url/use_store adds; DIRECT_LINK is the same
      * base link URL (including index.php when rewrites are off) without that segment.
