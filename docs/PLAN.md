@@ -32,7 +32,7 @@ Niespójności i luki w specyfikacji, które wpływają na kolejne commity:
 **0.3** PHPUnit: `require-dev` (`phpunit/phpunit`), `phpunit.xml.dist` z suite `unit`, `tests/bootstrap.php` ładujący `Mage.php` z `vendor/openmage/magento-lts` (bez `Mage::app()`), `vendor/` w `.gitignore`. Katalog `tests/` poza `modman`.
 `[Add PHPUnit setup]`
 
-**0.4** PHPStan: `phpstan/phpstan` + `macopedia/phpstan-magento1`, `phpstan.neon.dist` (poziom startowy np. 5, ścieżka `app/code/community/Bpf`).
+**0.4** PHPStan: `phpstan/phpstan` + `macopedia/phpstan-magento1`, `phpstan.neon.dist` (poziom 5, ścieżka `app/code/community/Bpf`); `bin/link-module.php` uruchamiany po `composer install/update` linkuje moduł do `vendor/openmage/magento-lts` wg `modman`, bo rozszerzenie czyta konfigurację modułów z roota Magento.
 `[Add PHPStan configuration]`
 
 **0.5** Skrypty composera: `lint` (`php -l` po plikach), `phpstan`, `test`.

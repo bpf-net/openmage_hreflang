@@ -1,0 +1,11 @@
+includes:
+    - vendor/macopedia/phpstan-magento1/extension.neon
+
+parameters:
+    level: 5
+    magentoRootPath: %currentWorkingDirectory%/vendor/openmage/magento-lts
+    paths:
+        - app/code/community/Bpf
+    excludePaths:
+        - app/code/community/Bpf/*/sql/*
+        - app/code/community/Bpf/*/data/*
