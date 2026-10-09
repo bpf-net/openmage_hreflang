@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Run PHP (or another command with BPF_DOCKER_CMD) in the dev tooling container.
+# PHP_VERSION=8.2 bin/php ... selects another PHP version.
+set -euo pipefail
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+php_version=${PHP_VERSION:-8.1}
+image="bpf-hreflang-dev:php${php_version}"
+
+if ! docker image inspect "$image" >/dev/null 2>&1; then
+    docker build --quiet --build-arg "PHP_VERSION=${php_version}" -t "$image" "$root/.docker/php" >&2
+fi
+
+cache_dir=${COMPOSER_CACHE_DIR:-$HOME/.cache/composer}
+mkdir -p "$cache_dir"
+
+tty=()
+[ -t 0 ] && [ -t 1 ] && tty=(-it)
+
+exec docker run --rm "${tty[@]}" \
+    -u "$(id -u):$(id -g)" \
+    -v "$root:/app" \
+    -v "$cache_dir:/tmp/composer-cache" \
+    -w /app \
+    "$image" "${BPF_DOCKER_CMD:-php}" "$@"

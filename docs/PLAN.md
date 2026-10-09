@@ -26,13 +26,16 @@ Niespójności i luki w specyfikacji, które wpływają na kolejne commity:
 **0.1** Dodanie specyfikacji i planu do repo.
 `[Add 1.0 specification and implementation plan]`
 
-**0.2** PHPUnit: `require-dev` (`phpunit/phpunit`), `phpunit.xml.dist` z suite `unit`, `tests/bootstrap.php` ładujący `Mage.php` z `vendor/openmage/magento-lts` (bez `Mage::app()`), `vendor/` w `.gitignore`. Katalog `tests/` poza `modman`.
+**0.2** Narzędzia PHP w Dockerze (lokalne PHP nie ma `ext-dom`): `.docker/php/Dockerfile` (PHP CLI z rozszerzeniami wymaganymi przez OpenMage + Composer, wersja PHP jako build arg), wrappery `bin/php` i `bin/composer` uruchamiające kontener z bieżącym UID i cache Composera z hosta.
+`[Add Docker-based PHP and Composer wrappers]`
+
+**0.3** PHPUnit: `require-dev` (`phpunit/phpunit`), `phpunit.xml.dist` z suite `unit`, `tests/bootstrap.php` ładujący `Mage.php` z `vendor/openmage/magento-lts` (bez `Mage::app()`), `vendor/` w `.gitignore`. Katalog `tests/` poza `modman`.
 `[Add PHPUnit setup]`
 
-**0.3** PHPStan: `phpstan/phpstan` + `macopedia/phpstan-magento1`, `phpstan.neon.dist` (poziom startowy np. 5, ścieżka `app/code/community/Bpf`).
+**0.4** PHPStan: `phpstan/phpstan` + `macopedia/phpstan-magento1`, `phpstan.neon.dist` (poziom startowy np. 5, ścieżka `app/code/community/Bpf`).
 `[Add PHPStan configuration]`
 
-**0.4** Skrypty composera: `lint` (`php -l` po plikach), `phpstan`, `test`.
+**0.5** Skrypty composera: `lint` (`php -l` po plikach), `phpstan`, `test`.
 `[Add composer scripts for lint, analysis and tests]`
 
 ## Faza 1 — szkielet modułu i konfiguracja

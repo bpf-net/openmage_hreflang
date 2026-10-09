@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Run Composer in the dev tooling container (see bin/php).
+BPF_DOCKER_CMD=composer exec "$(dirname "${BASH_SOURCE[0]}")/php" "$@"
