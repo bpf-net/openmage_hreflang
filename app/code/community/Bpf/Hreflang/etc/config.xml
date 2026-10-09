@@ -35,6 +35,12 @@
                         <catalog_product_view/>
                     </actions>
                 </product>
+                <category>
+                    <class>bpf_hreflang/resolver_category</class>
+                    <actions>
+                        <catalog_category_view/>
+                    </actions>
+                </category>
             </resolvers>
         </bpf_hreflang>
     </global>
