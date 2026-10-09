@@ -1,0 +1,6 @@
+<?php
+/** @var Bpf_Hreflang_Block_Head $this */
+?>
+<?php foreach ($this->getAlternates() as $hreflang => $url): ?>
+<link rel="alternate" hreflang="<?php echo $this->escapeHtml($hreflang) ?>" href="<?php echo $this->escapeUrl($url) ?>" />
+<?php endforeach ?>

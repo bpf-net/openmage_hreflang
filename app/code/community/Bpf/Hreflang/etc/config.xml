@@ -32,6 +32,15 @@
             </resolvers>
         </bpf_hreflang>
     </global>
+    <frontend>
+        <layout>
+            <updates>
+                <bpf_hreflang>
+                    <file>bpf_hreflang.xml</file>
+                </bpf_hreflang>
+            </updates>
+        </layout>
+    </frontend>
     <default>
         <bpf_hreflang>
             <general>

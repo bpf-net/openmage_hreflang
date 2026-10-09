@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <default>
+        <reference name="head">
+            <block type="bpf_hreflang/head" name="bpf_hreflang.head" template="bpf/hreflang/head.phtml"/>
+        </reference>
+    </default>
+</layout>
