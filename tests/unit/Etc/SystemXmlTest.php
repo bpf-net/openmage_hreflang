@@ -44,11 +44,42 @@ class Bpf_Hreflang_Etc_SystemXmlTest extends TestCase
             if (!str_starts_with($alias, 'bpf_hreflang/')) {
                 continue;
             }
-            $class = 'Bpf_Hreflang_Model_' . str_replace(' ', '_', ucwords(str_replace('_', ' ', substr($alias, 13))));
+            $class = $this->modelClass($alias);
 
             $this->assertTrue(class_exists($class), "Source model {$alias} ({$class}) not found");
             $this->assertTrue(method_exists($class, 'toOptionArray'), "{$class} lacks toOptionArray()");
         }
+    }
+
+    public function testModuleBackendModelsExist(): void
+    {
+        foreach ($this->section->xpath('groups/*/fields/*/backend_model') as $backendModel) {
+            $alias = (string) $backendModel;
+            if (!str_starts_with($alias, 'bpf_hreflang/')) {
+                continue;
+            }
+            $class = $this->modelClass($alias);
+
+            $this->assertTrue(class_exists($class), "Backend model {$alias} ({$class}) not found");
+            $this->assertTrue(is_subclass_of($class, Mage_Core_Model_Config_Data::class), "{$class} must extend Mage_Core_Model_Config_Data");
+        }
+    }
+
+    public function testLocaleCodeFieldIsValidatedOnSave(): void
+    {
+        $backendModel = $this->section->groups->general->fields->locale_code->backend_model;
+
+        $this->assertSame('bpf_hreflang/system_config_backend_localeCode', (string) $backendModel);
+    }
+
+    /**
+     * Resolves a "bpf_hreflang/…" model alias the way Mage_Core_Model_Config does.
+     */
+    private function modelClass(string $alias): string
+    {
+        $path = substr($alias, strlen('bpf_hreflang/'));
+
+        return 'Bpf_Hreflang_Model_' . str_replace(' ', '_', ucwords(str_replace('_', ' ', $path)));
     }
 
     public function testConfigSectionHasAclResource(): void
