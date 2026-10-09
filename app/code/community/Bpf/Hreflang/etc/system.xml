@@ -46,6 +46,7 @@
                             <label>Alternates Scope</label>
                             <frontend_type>select</frontend_type>
                             <source_model>bpf_hreflang/system_config_source_groupScope</source_model>
+                            <backend_model>bpf_hreflang/system_config_backend_groupScope</backend_model>
                             <comment>Which store views are listed as alternates of each other.</comment>
                             <sort_order>30</sort_order>
                             <show_in_default>1</show_in_default>
