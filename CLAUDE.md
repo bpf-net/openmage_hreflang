@@ -18,6 +18,7 @@ This is Magento **1**, not Magento 2: no DI, plugins, `di.xml` or declarative sc
 - Module code: `app/code/community/Bpf/Hreflang/` (alias `bpf_hreflang` for models/blocks/helpers, config paths under `bpf_hreflang/…`).
 - Module declaration: `app/etc/modules/Bpf_Hreflang.xml`.
 - `modman` maps files into a Magento root. **Every new file or directory outside `app/code/community/Bpf/Hreflang` (layouts, templates, locale CSVs, adminhtml layout) must be added to `modman`**, otherwise it is missing after Composer install. Tests and dev config are not mapped.
+- Shops install the module from the GitHub dist zipball; `.gitattributes` `export-ignore`s dev files so only `app/`, `composer.json` and `modman` ship. **Any new top-level dev file or directory must be added to `.gitattributes`.** Check with `git archive HEAD | tar -t`.
 - Module version lives in `etc/config.xml`; setup scripts (`install-X.php`/`upgrade-X-Y.php`) only run when their version matches it.
 
 ## Architecture (target, per SPEC §5)

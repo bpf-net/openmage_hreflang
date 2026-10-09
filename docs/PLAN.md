@@ -38,6 +38,9 @@ Niespójności i luki w specyfikacji, które wpływają na kolejne commity:
 **0.5** Skrypty composera: `lint` (`php -l` po plikach), `phpstan`, `test`.
 `[Add composer scripts for lint, analysis and tests]`
 
+**0.6** `.gitattributes` z `export-ignore` dla plików deweloperskich, żeby archiwa dist (GitHub zipball, z którego Composer instaluje moduł w sklepie) zawierały tylko `app/`, `composer.json` i `modman`.
+`[Exclude dev files from distribution archives]`
+
 ## Faza 1 — szkielet modułu i konfiguracja
 
 **1.1** `config.xml`: aliasy `global/models|blocks|helpers` → `bpf_hreflang`; pusty `Helper/Data.php`.

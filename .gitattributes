@@ -1,0 +1,11 @@
+# Keep dev-only files out of distribution archives (Composer dist / GitHub zipball).
+/.claude            export-ignore
+/.docker            export-ignore
+/bin                export-ignore
+/docs               export-ignore
+/tests              export-ignore
+/CLAUDE.md          export-ignore
+/phpunit.xml.dist   export-ignore
+/phpstan.neon.dist  export-ignore
+/.gitignore         export-ignore
+/.gitattributes     export-ignore
