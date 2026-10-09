@@ -85,11 +85,12 @@ class Bpf_Hreflang_Block_Adminhtml_Group_Edit_Form extends Mage_Adminhtml_Block_
             $pages->addStoreFilter($storeId);
         }
 
-        $options = [['value' => '', 'label' => Mage::helper('bpf_hreflang')->__('-- None --')]];
+        $helper = Mage::helper('bpf_hreflang');
+        $options = [['value' => '', 'label' => $helper->__('-- None --')]];
         foreach ($pages as $page) {
             $options[] = [
                 'value' => (int) $page->getId(),
-                'label' => sprintf('%s (%s)%s', $page->getTitle(), $page->getIdentifier(), $page->getIsActive() ? '' : ' [disabled]'),
+                'label' => sprintf('%s (%s)%s', $page->getTitle(), $page->getIdentifier(), $page->getIsActive() ? '' : ' ' . $helper->__('[disabled]')),
             ];
         }
 

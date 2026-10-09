@@ -4,3 +4,5 @@ app/code/community/Bpf/Hreflang     app/code/community/Bpf/Hreflang
 app/design/frontend/base/default/layout/bpf_hreflang.xml      app/design/frontend/base/default/layout/bpf_hreflang.xml
 app/design/frontend/base/default/template/bpf/hreflang        app/design/frontend/base/default/template/bpf/hreflang
 app/design/adminhtml/base/default/layout/bpf_hreflang.xml        app/design/adminhtml/base/default/layout/bpf_hreflang.xml
+app/locale/en_US/Bpf_Hreflang.csv        app/locale/en_US/Bpf_Hreflang.csv
+app/locale/pl_PL/Bpf_Hreflang.csv        app/locale/pl_PL/Bpf_Hreflang.csv

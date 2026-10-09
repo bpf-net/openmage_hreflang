@@ -80,6 +80,15 @@
         </bpf_hreflang>
     </global>
     <frontend>
+        <translate>
+            <modules>
+                <Bpf_Hreflang>
+                    <files>
+                        <default>Bpf_Hreflang.csv</default>
+                    </files>
+                </Bpf_Hreflang>
+            </modules>
+        </translate>
         <layout>
             <updates>
                 <bpf_hreflang>
@@ -100,6 +109,15 @@
         </routers>
     </admin>
     <adminhtml>
+        <translate>
+            <modules>
+                <Bpf_Hreflang>
+                    <files>
+                        <default>Bpf_Hreflang.csv</default>
+                    </files>
+                </Bpf_Hreflang>
+            </modules>
+        </translate>
         <layout>
             <updates>
                 <bpf_hreflang>
