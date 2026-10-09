@@ -21,6 +21,16 @@
                 <class>Bpf_Hreflang_Helper</class>
             </bpf_hreflang>
         </helpers>
+        <bpf_hreflang>
+            <resolvers>
+                <home>
+                    <class>bpf_hreflang/resolver_home</class>
+                    <actions>
+                        <cms_index_index/>
+                    </actions>
+                </home>
+            </resolvers>
+        </bpf_hreflang>
     </global>
     <default>
         <bpf_hreflang>
