@@ -8,7 +8,7 @@ RUN install-php-extensions gd intl mysqli pdo_mysql soap zip \
     && apt-get install -y --no-install-recommends git unzip \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer:2.9 /usr/bin/composer /usr/local/bin/composer
 
 ENV COMPOSER_HOME=/tmp/composer \
     COMPOSER_CACHE_DIR=/tmp/composer-cache
