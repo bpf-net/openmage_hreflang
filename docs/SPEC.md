@@ -210,7 +210,7 @@ contacts_*
 - Strony z parametrami zapytania (filtry warstwowe, sortowanie, paginacja) nie emitują tagów w 1.0.
 
 ### 6.7 x-default
-Dodawany, gdy skonfigurowany store view `x_default_store` jest wśród dostępnych wersji strony; wskazuje URL tej wersji. Jeśli ta wersja jest niedostępna, `x-default` jest pomijany. Dla strony głównej przy trybie bez kodu sklepu `x-default` to zwykle `/`.
+Dodawany, gdy skonfigurowany store view `x_default_store` jest wśród dostępnych wersji strony; wskazuje URL tej wersji. Jeśli ta wersja jest niedostępna, `x-default` jest pomijany. Przy `group_scope = global` wartość jest czytana z poziomu default (ustawienie per website jest ignorowane), bo wersje z różnych website'ów muszą wskazywać ten sam `x-default`. Dla strony głównej przy trybie bez kodu sklepu `x-default` to zwykle `/`.
 
 ### 6.8 Przykład wyniku
 

@@ -15,6 +15,11 @@ class Bpf_Hreflang_Model_BuilderTest extends TestCase
     /** @var array<int, Mage_Core_Model_Store> */
     private array $groupStores = [];
 
+    /** @var array{website?: int, default?: int} x_default_store as read at website or default scope */
+    private array $xDefaultByScope = [];
+
+    private string $groupScope = Bpf_Hreflang_Helper_Data::GROUP_SCOPE_WEBSITE;
+
     private function addStore(int $id, string $code, bool $active = true, bool $enabled = true, bool $noindex = false): Mage_Core_Model_Store
     {
         $store = new Mage_Core_Model_Store(['store_id' => $id, 'is_active' => $active ? 1 : 0, 'name' => "Store {$id}"]);
@@ -31,8 +36,12 @@ class Bpf_Hreflang_Model_BuilderTest extends TestCase
     {
         $settings = &$this->settings;
         $helper = $this->getMockBuilder(Bpf_Hreflang_Helper_Data::class)
-            ->onlyMethods(['getGroupStores', 'isEnabled', 'getLocaleCode', 'isStoreNoindex'])
+            ->onlyMethods(['getGroupStores', 'isEnabled', 'getLocaleCode', 'isStoreNoindex', 'getXDefaultStoreId', 'getGroupScope'])
             ->getMock();
+        $helper->method('getXDefaultStoreId')->willReturnCallback(
+            fn ($scope) => $this->xDefaultByScope[$scope instanceof Mage_Core_Model_Store ? 'website' : 'default'] ?? null,
+        );
+        $helper->method('getGroupScope')->willReturnCallback(fn () => $this->groupScope);
         $helper->method('getGroupStores')->willReturnCallback(fn () => $this->groupStores);
         $helper->method('isEnabled')->willReturnCallback(static fn ($store) => $settings[$store->getId()]['enabled']);
         $helper->method('getLocaleCode')->willReturnCallback(static fn ($store) => $settings[$store->getId()]['code']);
@@ -255,5 +264,164 @@ class Bpf_Hreflang_Model_BuilderTest extends TestCase
             'product' => ['class' => 'bpf_hreflang/resolver_product', 'actions' => ['catalog_product_view']],
             'home' => ['class' => 'bpf_hreflang/resolver_home', 'actions' => ['cms_index_index', 'cms_index_other']],
         ], $result);
+    }
+
+    /**
+     * @param array<int, string> $urls store ID => URL the resolver returns
+     */
+    private function resolverReturning(array $urls): Bpf_Hreflang_Model_Resolver_Interface
+    {
+        $resolver = $this->createMock(Bpf_Hreflang_Model_Resolver_Interface::class);
+        $resolver->method('resolve')->willReturnCallback(
+            static fn ($request, array $storeIds) => array_intersect_key($urls, array_flip($storeIds)),
+        );
+
+        return $resolver;
+    }
+
+    /**
+     * @param array<int, string> $urls
+     * @return array<string, string>
+     */
+    private function alternates(array $urls, Mage_Core_Model_Store $current, ?Bpf_Hreflang_Model_Builder $builder = null): array
+    {
+        $builder ??= $this->builder(['_log']);
+
+        return $builder->getAlternates(
+            $this->resolverReturning($urls),
+            $this->createMock(Mage_Core_Controller_Request_Http::class),
+            $current,
+        );
+    }
+
+    public function testAlternatesIncludeSelfReferenceAndXDefault(): void
+    {
+        $pl = $this->addStore(1, 'pl');
+        $this->addStore(2, 'en');
+        $this->addStore(3, 'de-AT');
+        $this->xDefaultByScope = ['website' => 1];
+
+        $this->assertSame([
+            'pl' => 'https://example.com/kubek.html',
+            'en' => 'https://example.com/en/mug.html',
+            'de-AT' => 'https://example.com/at/becher.html',
+            'x-default' => 'https://example.com/kubek.html',
+        ], $this->alternates([
+            1 => 'https://example.com/kubek.html',
+            2 => 'https://example.com/en/mug.html',
+            3 => 'https://example.com/at/becher.html',
+        ], $pl));
+    }
+
+    public function testEveryVersionGetsTheSameAlternates(): void
+    {
+        $stores = [$this->addStore(1, 'pl'), $this->addStore(2, 'en'), $this->addStore(3, 'de-AT')];
+        $this->xDefaultByScope = ['website' => 1];
+        $urls = [1 => 'https://example.com/a', 2 => 'https://example.com/en/b', 3 => 'https://example.com/at/c'];
+
+        $maps = array_map(fn ($store) => $this->alternates($urls, $store), $stores);
+
+        $this->assertSame($maps[0], $maps[1]);
+        $this->assertSame($maps[0], $maps[2]);
+    }
+
+    public function testUnavailableVersionDisappearsFromAllVersions(): void
+    {
+        $pl = $this->addStore(1, 'pl');
+        $en = $this->addStore(2, 'en');
+        $this->addStore(3, 'de-AT');
+        // The product is disabled in store 3, so the resolver does not return it.
+        $urls = [1 => 'https://example.com/a', 2 => 'https://example.com/en/b'];
+
+        $expected = ['pl' => 'https://example.com/a', 'en' => 'https://example.com/en/b'];
+        $this->assertSame($expected, $this->alternates($urls, $pl));
+        $this->assertSame($expected, $this->alternates($urls, $en));
+    }
+
+    public function testNoAlternatesWithoutSelfReference(): void
+    {
+        $this->addStore(1, 'pl');
+        $this->addStore(2, 'en');
+        $de = $this->addStore(3, 'de-AT');
+
+        $this->assertSame([], $this->alternates([1 => 'https://example.com/a', 2 => 'https://example.com/en/b'], $de));
+    }
+
+    public function testNoAlternatesWhenCurrentStoreIsNotACandidate(): void
+    {
+        $this->addStore(1, 'pl');
+        $this->addStore(2, 'en');
+        $excluded = $this->addStore(3, '');
+
+        $this->assertSame([], $this->alternates([1 => 'a', 2 => 'b', 3 => 'c'], $excluded));
+    }
+
+    public function testNoAlternatesBelowTwoVersionsEvenWithXDefault(): void
+    {
+        $pl = $this->addStore(1, 'pl');
+        $this->addStore(2, 'en');
+        $this->xDefaultByScope = ['website' => 1];
+
+        $this->assertSame([], $this->alternates([1 => 'https://example.com/a'], $pl));
+    }
+
+    public function testXDefaultOmittedWhenItsVersionIsUnavailable(): void
+    {
+        $this->addStore(1, 'pl');
+        $en = $this->addStore(2, 'en');
+        $this->addStore(3, 'de-AT');
+        $this->xDefaultByScope = ['website' => 1];
+
+        $this->assertSame(
+            ['en' => 'https://example.com/en/b', 'de-AT' => 'https://example.com/at/c'],
+            $this->alternates([2 => 'https://example.com/en/b', 3 => 'https://example.com/at/c'], $en),
+        );
+    }
+
+    public function testXDefaultOmittedWhenNotConfigured(): void
+    {
+        $pl = $this->addStore(1, 'pl');
+        $this->addStore(2, 'en');
+
+        $this->assertArrayNotHasKey('x-default', $this->alternates([1 => 'a', 2 => 'b'], $pl));
+    }
+
+    public function testGlobalScopeReadsXDefaultFromDefaultScope(): void
+    {
+        $pl = $this->addStore(1, 'pl');
+        $this->addStore(2, 'en');
+        $this->groupScope = Bpf_Hreflang_Helper_Data::GROUP_SCOPE_GLOBAL;
+        $this->xDefaultByScope = ['website' => 1, 'default' => 2];
+
+        $this->assertSame('b', $this->alternates([1 => 'a', 2 => 'b'], $pl)['x-default']);
+    }
+
+    public function testUrlsForNonCandidateStoresAreIgnored(): void
+    {
+        $pl = $this->addStore(1, 'pl');
+        $this->addStore(2, 'en');
+        $this->addStore(3, 'fr', enabled: false);
+
+        $resolver = $this->createMock(Bpf_Hreflang_Model_Resolver_Interface::class);
+        $resolver->method('resolve')->willReturn([1 => 'a', 2 => 'b', 3 => 'c', 99 => 'd', 4 => '']);
+
+        $result = $this->builder(['_log'])->getAlternates(
+            $resolver,
+            $this->createMock(Mage_Core_Controller_Request_Http::class),
+            $pl,
+        );
+
+        $this->assertSame(['pl' => 'a', 'en' => 'b'], $result);
+    }
+
+    public function testDuplicateCodeKeepsFirstStoreAndLogs(): void
+    {
+        $pl = $this->addStore(1, 'pl');
+        $this->addStore(2, 'en');
+        $this->addStore(3, 'en');
+        $builder = $this->builder(['_log']);
+        $builder->expects($this->once())->method('_log');
+
+        $this->assertSame(['pl' => 'a', 'en' => 'b'], $this->alternates([1 => 'a', 2 => 'b', 3 => 'c'], $pl, $builder));
     }
 }

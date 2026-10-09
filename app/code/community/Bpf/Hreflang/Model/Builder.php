@@ -131,6 +131,77 @@ class Bpf_Hreflang_Model_Builder
         Mage::log($message, Zend_Log::WARN);
     }
 
+    public const X_DEFAULT = 'x-default';
+
+    /**
+     * hreflang => URL map for the page handled by the resolver, as seen from the current store view.
+     *
+     * Returns no alternates when the page is not available in the current store view (no
+     * self-reference possible) or in fewer than two store views. Every version of the page gets
+     * the same map: candidates and the resolver's result do not depend on the current store.
+     *
+     * @return array<string, string> hreflang code => absolute URL, "x-default" last
+     */
+    public function getAlternates(
+        Bpf_Hreflang_Model_Resolver_Interface $resolver,
+        Mage_Core_Controller_Request_Http $request,
+        Mage_Core_Model_Store $currentStore,
+    ): array {
+        $helper = $this->_getHelper();
+        $candidates = $this->getCandidateStores($currentStore);
+        $currentStoreId = (int) $currentStore->getId();
+
+        if (!isset($candidates[$currentStoreId])) {
+            return [];
+        }
+
+        $urls = array_filter(
+            array_intersect_key($resolver->resolve($request, array_keys($candidates)), $candidates),
+            // Third-party resolvers may return empty values despite the interface contract.
+            static fn ($url): bool => (string) $url !== '',
+        );
+        if (!isset($urls[$currentStoreId])) {
+            return [];
+        }
+
+        $alternates = [];
+        foreach ($candidates as $storeId => $store) {
+            if (!isset($urls[$storeId])) {
+                continue;
+            }
+
+            $code = $helper->getLocaleCode($store);
+            if (isset($alternates[$code])) {
+                // Duplicate codes are rejected on save; if one slips through, the first store wins everywhere.
+                $this->_log("Store view {$storeId} has hreflang code \"{$code}\" already used in its group; skipped.");
+                continue;
+            }
+            $alternates[$code] = $urls[$storeId];
+        }
+
+        if (count($alternates) < 2) {
+            return [];
+        }
+
+        $xDefaultStoreId = $helper->getXDefaultStoreId($this->_getXDefaultScope($currentStore));
+        if ($xDefaultStoreId !== null && isset($urls[$xDefaultStoreId])) {
+            $alternates[self::X_DEFAULT] = $urls[$xDefaultStoreId];
+        }
+
+        return $alternates;
+    }
+
+    /**
+     * Scope to read x_default_store from. With alternates across all websites, every version must
+     * point to the same x-default, so the website-level value is ignored in favour of the default one.
+     */
+    protected function _getXDefaultScope(Mage_Core_Model_Store $currentStore): Mage_Core_Model_Store|int
+    {
+        return $this->_getHelper()->getGroupScope() === Bpf_Hreflang_Helper_Data::GROUP_SCOPE_GLOBAL
+            ? Mage_Core_Model_App::ADMIN_STORE_ID
+            : $currentStore;
+    }
+
     /**
      * Store views that can appear as alternates of the current one: those of its group
      * (website or all, per group_scope) that are active, have the module enabled, have
