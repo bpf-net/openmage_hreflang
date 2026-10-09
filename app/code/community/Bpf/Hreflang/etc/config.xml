@@ -40,6 +40,16 @@
                 <class>Bpf_Hreflang_Helper</class>
             </bpf_hreflang>
         </helpers>
+        <events>
+            <cms_page_delete_after>
+                <observers>
+                    <bpf_hreflang_remove_from_groups>
+                        <class>bpf_hreflang/observer</class>
+                        <method>removeDeletedCmsPageFromGroups</method>
+                    </bpf_hreflang_remove_from_groups>
+                </observers>
+            </cms_page_delete_after>
+        </events>
         <bpf_hreflang>
             <resolvers>
                 <home>
