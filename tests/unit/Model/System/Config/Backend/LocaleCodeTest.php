@@ -93,6 +93,55 @@ class Bpf_Hreflang_Model_System_Config_Backend_LocaleCodeTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider unknownIsoCodeProvider
+     */
+    public function testCodeOutsideIsoListsIsRejected(string $input, string $expectedMessage): void
+    {
+        $this->expectException(Mage_Core_Exception::class);
+        $this->expectExceptionMessage($expectedMessage);
+
+        $this->invoke($this->helper(), '_prepareValue', $input);
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public function unknownIsoCodeProvider(): array
+    {
+        return [
+            'unknown language' => ['zz', '"zz" is not an ISO 639-1 language code'],
+            'unknown language with valid region' => ['qq-GB', '"qq" is not an ISO 639-1 language code'],
+            'unknown region' => ['en-XX', '"XX" is not an ISO 3166-1 region code'],
+            'unknown region code ZZ' => ['en-ZZ', '"ZZ" is not an ISO 3166-1 region code'],
+            'user-assigned region XK' => ['sq-XK', '"XK" is not an ISO 3166-1 region code'],
+            'withdrawn region AN' => ['nl-AN', '"AN" is not an ISO 3166-1 region code'],
+            'european union is not a country' => ['en-EU', '"EU" is not an ISO 3166-1 region code'],
+            'common mistake UK for GB' => ['en-UK', '"UK" is not an ISO 3166-1 region code'],
+        ];
+    }
+
+    /**
+     * @dataProvider knownIsoCodeProvider
+     */
+    public function testRealIsoCodesAreAccepted(string $input): void
+    {
+        $this->assertSame($input, $this->invoke($this->helper(), '_prepareValue', $input));
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public function knownIsoCodeProvider(): array
+    {
+        return [
+            'nepali, an anagram of en' => ['ne'],
+            'brazilian portuguese' => ['pt-BR'],
+            'south sudan' => ['en-SS'],
+            'curacao' => ['nl-CW'],
+        ];
+    }
+
     public function testCodeUsedByAnotherStoreOfTheGroupIsRejected(): void
     {
         $helper = $this->helper(

@@ -102,6 +102,33 @@ class Bpf_Hreflang_Helper_DataTest extends TestCase
         ];
     }
 
+    public function testIsoListsMatchStandardSizes(): void
+    {
+        $helper = $this->helper([]);
+        $letters = range('a', 'z');
+        $languages = $regions = 0;
+        foreach ($letters as $first) {
+            foreach ($letters as $second) {
+                $languages += (int) $helper->isKnownLanguage($first . $second);
+                $regions += (int) $helper->isKnownRegion(strtoupper($first . $second));
+            }
+        }
+
+        // ISO 639-1 defines 184 language codes; ISO 3166-1 assigns 249 alpha-2 codes.
+        $this->assertSame(184, $languages);
+        $this->assertSame(249, $regions);
+    }
+
+    public function testIsoListsAreCaseSensitive(): void
+    {
+        $helper = $this->helper([]);
+
+        $this->assertTrue($helper->isKnownLanguage('en'));
+        $this->assertFalse($helper->isKnownLanguage('EN'));
+        $this->assertTrue($helper->isKnownRegion('GB'));
+        $this->assertFalse($helper->isKnownRegion('gb'));
+    }
+
     public function testNormalizedCodesFromSpecAreValid(): void
     {
         $helper = $this->helper([]);

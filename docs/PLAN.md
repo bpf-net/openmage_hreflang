@@ -61,6 +61,9 @@ Niespójności i luki w specyfikacji, które wpływają na kolejne commity:
 **1.6** Backend `LocaleCode`: wykrywanie kolizji kodu w tej samej grupie (wg `group_scope`) z nazwą kolidującego store w komunikacie; logika kolizji w osobnej, testowalnej metodzie + testy (kolizja w website, brak kolizji między website przy `website`, kolizja przy `global`, `en` + `en-GB` dozwolone).
 `[Reject duplicate locale codes within store group]`
 
+**1.7** Walidacja przy zapisie także względem list kodów: język z ISO 639-1, region z ISO 3166-1 alpha-2 (dane CLDR z `Zend_Locale`, bez kodów spoza ISO: EU, QO, XK, ZZ…). Na froncie `getLocaleCode()` sprawdza tylko format. Domyka issue #4.
+`[Validate locale codes against ISO 639-1 and ISO 3166-1 lists]`
+
 ## Faza 2 — budowa URL-i (`Model/Url.php`)
 
 **2.1** `Bpf_Hreflang_Model_Url::getHomeUrl($storeId)`: bazowy URL store, `_secure` gdy front na HTTPS (`web/secure/use_in_frontend`) + testy.
@@ -191,7 +194,7 @@ Każdy przypadek z p. 8.2 SPEC jako osobny commit:
 | 2. Strony CMS | 2.5, 6.1–6.4, 7.1–7.4 |
 | 3. Strona główna | 2.1, 4.1 |
 | 4. `x-default` | 1.3, 3.4 |
-| 5. Kod języka z walidacją | 1.4–1.6 |
+| 5. Kod języka z walidacją | 1.4–1.7 |
 | 6. URL bez kodu sklepu | 2.2 |
 | 7. Wykluczenia | 3.5, 4.2, 3.2 (store `NOINDEX`) |
 | 8. Self-reference i zwrotność | 3.4 |

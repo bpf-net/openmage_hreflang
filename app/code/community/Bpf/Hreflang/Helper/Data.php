@@ -15,6 +15,18 @@ class Bpf_Hreflang_Helper_Data extends Mage_Core_Helper_Abstract
     public const LOCALE_CODE_PATTERN = '/^[a-z]{2}(-[A-Z]{2})?$/D';
 
     /**
+     * Two-letter CLDR territories that are not assigned ISO 3166-1 alpha-2 codes:
+     * exceptionally reserved (AC, CP, DG, EA, EU, IC, TA), user-assigned (QO, XK, ZZ) and withdrawn (AN).
+     */
+    public const NON_ISO_REGIONS = ['AC', 'AN', 'CP', 'DG', 'EA', 'EU', 'IC', 'QO', 'TA', 'XK', 'ZZ'];
+
+    /** @var array<string, true>|null */
+    private static ?array $_isoLanguages = null;
+
+    /** @var array<string, true>|null */
+    private static ?array $_isoRegions = null;
+
+    /**
      * @param null|bool|int|string|Mage_Core_Model_Store $store
      */
     public function isEnabled($store = null): bool
@@ -51,12 +63,40 @@ class Bpf_Hreflang_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Whether the code is a normalized hreflang code: ISO 639-1 language, optionally
-     * followed by an ISO 3166-1 alpha-2 region ("en", "en-GB").
+     * Whether the code has the form of a normalized hreflang code: two-letter language,
+     * optionally followed by a two-letter region ("en", "en-GB"). Format only; see
+     * isKnownLanguage() / isKnownRegion() for the ISO code lists.
      */
     public function isValidLocaleCode(string $code): bool
     {
         return preg_match(self::LOCALE_CODE_PATTERN, $code) === 1;
+    }
+
+    /**
+     * Whether the code is an ISO 639-1 language code (lowercase, e.g. "en").
+     */
+    public function isKnownLanguage(string $code): bool
+    {
+        if (self::$_isoLanguages === null) {
+            $codes = array_keys(Zend_Locale::getTranslationList('language', 'en'));
+            self::$_isoLanguages = array_fill_keys(preg_grep('/^[a-z]{2}$/D', $codes), true);
+        }
+
+        return isset(self::$_isoLanguages[$code]);
+    }
+
+    /**
+     * Whether the code is an assigned ISO 3166-1 alpha-2 region code (uppercase, e.g. "GB").
+     */
+    public function isKnownRegion(string $code): bool
+    {
+        if (self::$_isoRegions === null) {
+            $codes = array_keys(Zend_Locale::getTranslationList('territory', 'en'));
+            $codes = array_diff(preg_grep('/^[A-Z]{2}$/D', $codes), self::NON_ISO_REGIONS);
+            self::$_isoRegions = array_fill_keys($codes, true);
+        }
+
+        return isset(self::$_isoRegions[$code]);
     }
 
     /**

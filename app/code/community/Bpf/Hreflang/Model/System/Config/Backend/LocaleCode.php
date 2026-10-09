@@ -20,18 +20,32 @@ class Bpf_Hreflang_Model_System_Config_Backend_LocaleCode extends Mage_Core_Mode
     }
 
     /**
-     * @throws Mage_Core_Exception when the code is not a valid hreflang code
+     * @throws Mage_Core_Exception when the code is malformed or not an ISO 639-1 language / ISO 3166-1 region
      */
     protected function _prepareValue(string $value): string
     {
         $helper = $this->_getHelper();
         $code = $helper->normalizeLocaleCode($value);
 
-        if ($code !== '' && !$helper->isValidLocaleCode($code)) {
+        if ($code === '') {
+            return $code;
+        }
+
+        if (!$helper->isValidLocaleCode($code)) {
             Mage::throwException($helper->__(
                 'Invalid hreflang code "%s". Use a two-letter language code, optionally with a two-letter region, e.g. "en" or "en-GB".',
                 $value,
             ));
+        }
+
+        [$language, $region] = explode('-', $code) + [1 => null];
+
+        if (!$helper->isKnownLanguage($language)) {
+            Mage::throwException($helper->__('Invalid hreflang code "%s": "%s" is not an ISO 639-1 language code.', $value, $language));
+        }
+
+        if ($region !== null && !$helper->isKnownRegion($region)) {
+            Mage::throwException($helper->__('Invalid hreflang code "%s": "%s" is not an ISO 3166-1 region code.', $value, $region));
         }
 
         return $code;
