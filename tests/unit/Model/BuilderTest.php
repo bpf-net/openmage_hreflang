@@ -80,4 +80,180 @@ class Bpf_Hreflang_Model_BuilderTest extends TestCase
         );
         $this->assertSame([1, 2], array_keys($builder->getCandidateStores($de)));
     }
+
+    private function resolver(bool $canResolve = true): Bpf_Hreflang_Model_Resolver_Interface
+    {
+        return new class ($canResolve) implements Bpf_Hreflang_Model_Resolver_Interface {
+            public function __construct(private bool $canResolve)
+            {
+            }
+
+            public function canResolve(Mage_Core_Controller_Request_Http $request): bool
+            {
+                return $this->canResolve;
+            }
+
+            public function resolve(Mage_Core_Controller_Request_Http $request, array $storeIds): array
+            {
+                return [];
+            }
+
+            public function getCacheKey(Mage_Core_Controller_Request_Http $request): string
+            {
+                return 'fake';
+            }
+
+            public function getCacheTags(Mage_Core_Controller_Request_Http $request): array
+            {
+                return [];
+            }
+        };
+    }
+
+    /**
+     * @param array<string, array{class: string, actions: list<string>}> $config
+     * @param array<string, mixed> $instances class alias => instance created for it
+     * @param array<string, mixed> $eventResolvers code => object added by observers
+     * @return Bpf_Hreflang_Model_Builder&MockObject
+     */
+    private function builderWithResolvers(array $config, array $instances, array $eventResolvers = []): Bpf_Hreflang_Model_Builder
+    {
+        $builder = $this->builder(['_getResolverConfig', '_createResolver', '_collectEventResolvers', '_log']);
+        $builder->method('_getResolverConfig')->willReturn($config);
+        $builder->method('_createResolver')->willReturnCallback(static fn (string $class) => $instances[$class] ?? false);
+        $builder->method('_collectEventResolvers')->willReturn($eventResolvers);
+
+        return $builder;
+    }
+
+    public function testConfigResolversAreFilteredByAction(): void
+    {
+        $product = $this->resolver();
+        $category = $this->resolver();
+        $builder = $this->builderWithResolvers(
+            [
+                'product' => ['class' => 'x/product', 'actions' => ['catalog_product_view']],
+                'category' => ['class' => 'x/category', 'actions' => ['catalog_category_view']],
+            ],
+            ['x/product' => $product, 'x/category' => $category],
+        );
+
+        $this->assertSame([$product], $builder->getResolvers('catalog_product_view'));
+        $this->assertSame([], $builder->getResolvers('cms_page_view'));
+    }
+
+    public function testActionMatchingIsCaseInsensitive(): void
+    {
+        $home = $this->resolver();
+        $builder = $this->builderWithResolvers(
+            ['home' => ['class' => 'x/home', 'actions' => ['cms_index_noroute']]],
+            ['x/home' => $home],
+        );
+
+        $this->assertSame([$home], $builder->getResolvers('cms_index_noRoute'));
+    }
+
+    public function testEventResolversComeFirstAndApplyToAnyAction(): void
+    {
+        $product = $this->resolver();
+        $blog = $this->resolver();
+        $builder = $this->builderWithResolvers(
+            ['product' => ['class' => 'x/product', 'actions' => ['catalog_product_view']]],
+            ['x/product' => $product],
+            ['blog_post' => $blog],
+        );
+
+        $this->assertSame([$blog, $product], $builder->getResolvers('catalog_product_view'));
+        $this->assertSame([$blog], $builder->getResolvers('blog_post_view'));
+    }
+
+    public function testEventResolverReplacesBuiltInWithSameCode(): void
+    {
+        $custom = $this->resolver();
+        $builder = $this->builderWithResolvers(
+            ['product' => ['class' => 'x/product', 'actions' => ['catalog_product_view']]],
+            ['x/product' => $this->resolver()],
+            ['product' => $custom],
+        );
+
+        $this->assertSame([$custom], $builder->getResolvers('catalog_product_view'));
+    }
+
+    public function testInvalidResolversAreSkippedAndLogged(): void
+    {
+        $builder = $this->builderWithResolvers(
+            ['broken' => ['class' => 'x/broken', 'actions' => ['catalog_product_view']]],
+            ['x/broken' => new Varien_Object()],
+            ['not_a_resolver' => new Varien_Object()],
+        );
+        $builder->expects($this->exactly(2))->method('_log');
+
+        $this->assertSame([], $builder->getResolvers('catalog_product_view'));
+    }
+
+    public function testEventIsDispatchedOnce(): void
+    {
+        $builder = $this->builder(['_getResolverConfig', '_collectEventResolvers']);
+        $builder->method('_getResolverConfig')->willReturn([]);
+        $builder->expects($this->once())->method('_collectEventResolvers')->willReturn([]);
+
+        $builder->getResolvers('catalog_product_view');
+        $builder->getResolvers('cms_page_view');
+    }
+
+    public function testFirstResolverThatCanResolveWins(): void
+    {
+        $declines = $this->resolver(false);
+        $accepts = $this->resolver(true);
+        $later = $this->resolver(true);
+        $builder = $this->builderWithResolvers(
+            ['later' => ['class' => 'x/later', 'actions' => ['catalog_product_view']]],
+            ['x/later' => $later],
+            ['declines' => $declines, 'accepts' => $accepts],
+        );
+        $request = $this->createMock(Mage_Core_Controller_Request_Http::class);
+
+        $this->assertSame($accepts, $builder->getResolver('catalog_product_view', $request));
+    }
+
+    public function testNoResolverForUnhandledPage(): void
+    {
+        $builder = $this->builderWithResolvers([], []);
+        $request = $this->createMock(Mage_Core_Controller_Request_Http::class);
+
+        $this->assertNull($builder->getResolver('cms_page_view', $request));
+    }
+
+    public function testResolverConfigIsReadFromConfigXmlFormat(): void
+    {
+        $config = new Mage_Core_Model_Config_Base(<<<'XML'
+            <config><global><bpf_hreflang><resolvers>
+                <product>
+                    <class>bpf_hreflang/resolver_product</class>
+                    <actions><catalog_product_view/></actions>
+                </product>
+                <home>
+                    <class>bpf_hreflang/resolver_home</class>
+                    <actions><cms_index_index/><Cms_Index_Other/></actions>
+                </home>
+            </resolvers></bpf_hreflang></global></config>
+            XML);
+        $configProperty = new ReflectionProperty(Mage::class, '_config');
+        $configProperty->setAccessible(true);
+        $previous = $configProperty->getValue();
+        $configProperty->setValue(null, $config);
+
+        try {
+            $method = new ReflectionMethod(Bpf_Hreflang_Model_Builder::class, '_getResolverConfig');
+            $method->setAccessible(true);
+            $result = $method->invoke(new Bpf_Hreflang_Model_Builder());
+        } finally {
+            $configProperty->setValue(null, $previous);
+        }
+
+        $this->assertSame([
+            'product' => ['class' => 'bpf_hreflang/resolver_product', 'actions' => ['catalog_product_view']],
+            'home' => ['class' => 'bpf_hreflang/resolver_home', 'actions' => ['cms_index_index', 'cms_index_other']],
+        ], $result);
+    }
 }

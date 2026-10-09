@@ -119,9 +119,8 @@ Resolvery wbudowane:
 
 ### 5.3 Rejestracja resolverów i event
 
-- Wbudowane resolvery są zadeklarowane w `config.xml` w węźle `global/bpf_hreflang/resolvers/<kod>` (klasa + lista akcji).
-- Builder po zebraniu resolverów z konfiguracji wywołuje event `bpf_hreflang_resolvers_collect` z obiektem `resolvers` (`Varien_Object`), do którego inne moduły mogą dodać własne instancje.
-- Nazwa eventu ma prefiks modułu, żeby uniknąć kolizji z innymi rozszerzeniami (w planie roboczo `hreflang_resolvers_collect`).
+- Wbudowane resolvery są zadeklarowane w `config.xml` w węźle `global/bpf_hreflang/resolvers/<kod>`: `<class>` (alias modelu) i `<actions>` z pełnymi nazwami akcji jako węzłami, np. `<actions><catalog_product_view/></actions>` — inny moduł może dopisać akcję przez scalanie konfiguracji. Porównanie nazw akcji nie rozróżnia wielkości liter.
+- Builder wywołuje event `bpf_hreflang_resolvers_collect` z obiektem `resolvers` (`Varien_Object`), do którego inne moduły dodają własne instancje pod kodem: `$observer->getEvent()->getResolvers()->setData('blog_post', $resolver)`. Resolver dodany pod kodem wbudowanego zastępuje go; obiekty bez interfejsu są pomijane z wpisem w logu.
 - Pierwszy resolver, którego `canResolve()` zwraca `true`, wygrywa; resolvery z eventu są sprawdzane przed wbudowanymi.
 
 ### 5.4 Grupy tłumaczeń
