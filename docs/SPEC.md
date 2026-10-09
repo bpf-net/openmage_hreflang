@@ -43,7 +43,7 @@ Status: szkic, wersja dokumentu 2026-10-09.
 | Setup resource | `bpf_hreflang_setup` |
 | Ścieżki konfiguracji | `bpf_hreflang/…` |
 | OpenMage | 20.x |
-| PHP | `>=8.1` (CI: 8.1/8.2/8.3) |
+| PHP | `>=8.2` (CI: 8.2/8.3) |
 | Licencja | OSL-3.0 |
 
 ## 4. Konfiguracja (System → Konfiguracja → Bpf → Hreflang)
@@ -273,7 +273,7 @@ Każdy przypadek brzegowy jako osobny test (curl strony + parsowanie tagów):
 8. Ten sam język w kilku krajach (`en-GB` + `en`).
 
 ### 8.3 CI
-GitHub Actions: lint PHP, PHPStan, PHPUnit na macierzy PHP 8.1/8.2/8.3.
+GitHub Actions: lint PHP, PHPStan, PHPUnit na macierzy PHP 8.2/8.3.
 
 ## 9. Kryteria ukończenia 1.0
 

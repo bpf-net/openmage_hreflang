@@ -1,9 +1,9 @@
 # Dev tooling image: PHP CLI with the extensions OpenMage 20.x requires, plus Composer.
-ARG PHP_VERSION=8.1
+ARG PHP_VERSION=8.2
 FROM php:${PHP_VERSION}-cli
 
 COPY --from=mlocati/php-extension-installer:2.7 /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions gd intl mysqli pdo_mysql soap zip \
+RUN install-php-extensions ftp gd intl mysqli pdo_mysql soap zip \
     && apt-get update \
     && apt-get install -y --no-install-recommends git unzip \
     && rm -rf /var/lib/apt/lists/*
