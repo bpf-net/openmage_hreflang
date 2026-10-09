@@ -31,15 +31,15 @@ Request flow: block `Bpf_Hreflang_Block_Head` (child of `head`, handle `default`
 
 ## Commands
 
-Dev tooling (PHPUnit, PHPStan, composer scripts, CI) is introduced in PLAN phase 0 and not present yet. Once added:
+Host PHP lacks `ext-dom`, so PHP and Composer run in Docker via `bin/php` and `bin/composer` (image built from `.docker/php/Dockerfile` on first use; `PHP_VERSION=8.3 bin/php …` picks another version). Never run host `php`/`composer` for project tooling.
 
 ```bash
-composer install
-composer lint        # php -l over module files
-composer phpstan
-composer test        # PHPUnit, unit suite
-vendor/bin/phpunit --filter <TestName>   # single test
+bin/composer install
+bin/php vendor/bin/phpunit                        # unit suite
+bin/php vendor/bin/phpunit --filter <TestName>    # single test
 ```
+
+`tests/bootstrap.php` loads `vendor/openmage/magento-lts/app/Mage.php` without `Mage::app()` and puts this repo's `app/code/community` first on the include path. PHPStan and composer scripts (`lint`, `phpstan`, `test`) come in PLAN 0.4–0.5.
 
 Integration tests (PLAN 8.x) run against a docker-compose OpenMage + sample data instance via `BASE_URL`.
 
