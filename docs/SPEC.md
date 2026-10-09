@@ -37,7 +37,7 @@ Status: szkic, wersja dokumentu 2026-10-09.
 
 | Element | Wartość |
 | --- | --- |
-| Pakiet Composer | `bpf/openmage_hreflang`, typ `magento-module` |
+| Pakiet Composer | `bpf/openmage-hreflang`, typ `magento-module` (repozytorium GitHub: `bpf-net/openmage_hreflang`) |
 | Instalacja | `magento-hackathon/magento-composer-installer`, mapowanie w `modman` |
 | Moduł | `Bpf_Hreflang`, code pool `community` |
 | Alias klas (model/blok/helper) | `bpf_hreflang` |

@@ -40,7 +40,7 @@ Add the repository and require the package in your shop's `composer.json`:
 ```
 
 ```bash
-composer require bpf/openmage_hreflang
+composer require bpf/openmage-hreflang
 ```
 
 The Composer installer deploys the module into the Magento root according to `modman`.

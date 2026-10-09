@@ -19,7 +19,7 @@ Niespójności i luki w specyfikacji, które wpływają na kolejne commity:
 | D7 | Bieżący store niedostępny w wyniku resolvera (np. rzadki edge case) — SPEC milczy. | Brak self-reference ⇒ brak tagów. | 3.4 |
 | D8 | Testy jednostkowe Buildera/Url bez bazy. | Builder i Url przyjmują zależności (dostawca store'ów, odczyt konfiguracji) przez konstruktor/settery z domyślnymi implementacjami opartymi o `Mage`; testy podstawiają stuby. | 2.x, 3.x |
 | D9 | Otwarte pytanie 10.2 (`group_scope`). | Zostawić `website` + `global` jak w SPEC (koszt niewielki). | 1.3, 3.2 |
-| D10 | Otwarte pytanie 10.3 (nazwa pakietu). | Rozstrzygnąć przed 9.5. | 9.5 |
+| D10 | Otwarte pytanie 10.3 (nazwa pakietu). | Rozstrzygnięte: `bpf/openmage-hreflang` (myślnik, konwencja Composera); repozytorium zostaje `bpf-net/openmage_hreflang`. | 9.5 |
 
 ## Faza 0 — repozytorium i narzędzia
 

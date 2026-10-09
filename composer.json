@@ -1,5 +1,5 @@
 {
-  "name": "bpf/openmage_hreflang",
+  "name": "bpf/openmage-hreflang",
   "description": "Hreflang alternate links for OpenMage multi-store setups.",
   "license": "OSL-3.0",
   "type": "magento-module",

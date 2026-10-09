@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`Bpf_Hreflang` — an **OpenMage 20.x (Magento 1)** module that emits `<link rel="alternate" hreflang="…">` tags for multi-store-view shops. Installed via Composer (`bpf/openmage_hreflang`, type `magento-module`) using `magento-hackathon/magento-composer-installer` and the `modman` mapping. PHP `>=8.2`.
+`Bpf_Hreflang` — an **OpenMage 20.x (Magento 1)** module that emits `<link rel="alternate" hreflang="…">` tags for multi-store-view shops. Installed via Composer (`bpf/openmage-hreflang`, type `magento-module`) using `magento-hackathon/magento-composer-installer` and the `modman` mapping. PHP `>=8.2`.
 
 This is Magento **1**, not Magento 2: no DI, plugins, `di.xml` or declarative schema. Use M1 idioms — class aliases (`Mage::getModel('bpf_hreflang/…')`), `etc/config.xml` / `system.xml` / `adminhtml.xml`, observers declared in `config.xml`, setup scripts in `sql/bpf_hreflang_setup/`, admin routes via `admin/routers/adminhtml/args/modules`. Ignore guidance from the global `magento-core` skill — it targets Magento 2.4. Use the `openmage-conventions` skill (`../.claude/skills/openmage-conventions`) instead; OpenMage core source for lookup: `/home/div/Projects/Magento/openmage/vendor/openmage/magento-lts`.
 
