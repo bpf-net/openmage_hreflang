@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Runs lint, PHPStan and unit tests on every supported PHP version before pushing.
+# CI only runs for release tags, so this is the gate for everything that reaches GitHub.
+# Skip once with: git push --no-verify
+set -euo pipefail
+
+root=$(git rev-parse --show-toplevel)
+
+for php_version in 8.2 8.3; do
+    echo "pre-push: checking on PHP ${php_version}..." >&2
+    if ! PHP_VERSION=$php_version "$root/bin/composer" check </dev/null; then
+        echo "pre-push: checks failed on PHP ${php_version}; push aborted (use --no-verify to skip)." >&2
+        exit 1
+    fi
+done

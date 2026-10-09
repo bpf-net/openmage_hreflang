@@ -38,10 +38,12 @@
   "prefer-stable": true,
   "scripts": {
     "post-install-cmd": [
-      "@php bin/link-module.php"
+      "@php bin/link-module.php",
+      "@git-hooks"
     ],
     "post-update-cmd": [
-      "@php bin/link-module.php"
+      "@php bin/link-module.php",
+      "@git-hooks"
     ],
     "lint": "parallel-lint --no-progress app bin tests",
     "phpstan": "phpstan analyse --no-progress",
@@ -50,12 +52,14 @@
       "@lint",
       "@phpstan",
       "@test"
-    ]
+    ],
+    "git-hooks": "git config core.hooksPath .githooks"
   },
   "scripts-descriptions": {
     "lint": "Check PHP syntax of module, scripts and tests",
     "phpstan": "Run static analysis",
     "test": "Run PHPUnit unit suite",
-    "check": "Run lint, phpstan and tests"
+    "check": "Run lint, phpstan and tests",
+    "git-hooks": "Use the repository git hooks (.githooks)"
   }
 }

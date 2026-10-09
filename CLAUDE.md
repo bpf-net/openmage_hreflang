@@ -45,6 +45,8 @@ bin/php vendor/bin/phpunit --filter <TestName>    # single test
 
 `tests/bootstrap.php` loads `vendor/openmage/magento-lts/app/Mage.php` without `Mage::app()` and puts this repo's `app/code/community` first on the include path. Composer's post-install/update hook runs `bin/link-module.php`, which symlinks the module into `vendor/openmage/magento-lts` per `modman` — PHPStan (`macopedia/phpstan-magento1`) reads module config from that root to resolve `bpf_hreflang/…` aliases; rerun `bin/composer run-script post-install-cmd` after changing `modman`.
 
+CI (GitHub Actions) runs only for `v*` tags. The gate before anything reaches GitHub is `.githooks/pre-push`, which runs `bin/composer check` on PHP 8.2 and 8.3 (~11 s); `bin/composer install` enables it via `git config core.hooksPath .githooks`. Before tagging, make sure that check passes; a published tag is never moved — fix forward with a new version.
+
 Integration tests (PLAN 8.x) run against a docker-compose OpenMage + sample data instance via `BASE_URL`.
 
 ## Commits

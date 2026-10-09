@@ -2,6 +2,7 @@
 /.claude            export-ignore
 /.docker            export-ignore
 /.github            export-ignore
+/.githooks          export-ignore
 /bin                export-ignore
 /docs               export-ignore
 /tests              export-ignore
