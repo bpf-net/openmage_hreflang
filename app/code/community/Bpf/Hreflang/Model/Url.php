@@ -41,6 +41,18 @@ class Bpf_Hreflang_Model_Url
     }
 
     /**
+     * CMS page URL in the store: base URL + identifier, or the home URL for the store's home page.
+     */
+    public function getCmsPageUrl(string $identifier, int $storeId): string
+    {
+        if ($identifier === $this->_getHomePageIdentifier($storeId)) {
+            return $this->getHomeUrl($storeId);
+        }
+
+        return $this->_getBaseUrl($storeId) . ltrim($identifier, '/');
+    }
+
+    /**
      * @param list<int> $storeIds
      * @return array<int, string> store ID => absolute URL
      */
@@ -102,6 +114,16 @@ class Bpf_Hreflang_Model_Url
     protected function _getStore(int $storeId): Mage_Core_Model_Store
     {
         return Mage::app()->getStore($storeId);
+    }
+
+    /**
+     * Identifier of the store's CMS home page; the config value may carry a "|<page ID>" suffix.
+     */
+    protected function _getHomePageIdentifier(int $storeId): string
+    {
+        $value = (string) Mage::getStoreConfig(Mage_Cms_Helper_Page::XML_PATH_HOME_PAGE, $storeId);
+
+        return explode('|', $value)[0];
     }
 
     /**

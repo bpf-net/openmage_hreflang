@@ -154,4 +154,49 @@ class Bpf_Hreflang_Model_UrlTest extends TestCase
             2 => 'https://example.com/en/mugs.html',
         ], $model->getCategoryUrls(7, [1, 2, 3]));
     }
+
+    /**
+     * @param array<int, string> $homePages store ID => web/default/cms_home_page value
+     * @param list<int> $rootStoreIds
+     * @return Bpf_Hreflang_Model_Url&MockObject
+     */
+    private function urlModelWithHomePages(array $homePages, array $rootStoreIds = []): Bpf_Hreflang_Model_Url
+    {
+        $model = $this->getMockBuilder(Bpf_Hreflang_Model_Url::class)
+            ->onlyMethods(['_getStore', '_getRootStoreIds', '_getHomePageIdentifier'])
+            ->getMock();
+        $stores = [1 => $this->store(1, 'pl', true, true), 2 => $this->store(2, 'en', true, true)];
+        $model->method('_getStore')->willReturnCallback(static fn (int $id) => $stores[$id]);
+        $model->method('_getRootStoreIds')->willReturn($rootStoreIds);
+        $model->method('_getHomePageIdentifier')->willReturnCallback(
+            static fn (int $id): string => explode('|', $homePages[$id] ?? '')[0],
+        );
+
+        return $model;
+    }
+
+    public function testCmsPageUrlIsBaseUrlPlusIdentifier(): void
+    {
+        $model = $this->urlModelWithHomePages([1 => 'home', 2 => 'home'], [1]);
+
+        $this->assertSame('https://example.com/o-nas', $model->getCmsPageUrl('o-nas', 1));
+        $this->assertSame('https://example.com/en/about-us', $model->getCmsPageUrl('about-us', 2));
+    }
+
+    public function testCmsHomePageGetsHomeUrl(): void
+    {
+        $model = $this->urlModelWithHomePages([1 => 'strona-glowna', 2 => 'home'], [1]);
+
+        $this->assertSame('https://example.com/', $model->getCmsPageUrl('strona-glowna', 1));
+        $this->assertSame('https://example.com/en/', $model->getCmsPageUrl('home', 2));
+        // "home" is a regular page in store 1, whose home page is another one.
+        $this->assertSame('https://example.com/home', $model->getCmsPageUrl('home', 1));
+    }
+
+    public function testHomePageIdentifierIgnoresPageIdSuffix(): void
+    {
+        $model = $this->urlModelWithHomePages([2 => 'home|2']);
+
+        $this->assertSame('https://example.com/en/', $model->getCmsPageUrl('home', 2));
+    }
 }
