@@ -25,12 +25,90 @@ class Bpf_Hreflang_Helper_DataTest extends TestCase
         $this->assertFalse($this->helper([])->isEnabled());
     }
 
-    public function testGetLocaleCodeTrimsValue(): void
+    /**
+     * @dataProvider configuredLocaleCodeProvider
+     */
+    public function testGetLocaleCodeReturnsNormalizedValidCodeOnly(?string $value, string $expected): void
     {
-        $helper = $this->helper([Bpf_Hreflang_Helper_Data::XML_PATH_LOCALE_CODE => " de-AT \n"]);
+        $helper = $this->helper([Bpf_Hreflang_Helper_Data::XML_PATH_LOCALE_CODE => $value]);
 
-        $this->assertSame('de-AT', $helper->getLocaleCode());
-        $this->assertSame('', $this->helper([])->getLocaleCode());
+        $this->assertSame($expected, $helper->getLocaleCode());
+    }
+
+    /**
+     * @return array<string, array{?string, string}>
+     */
+    public function configuredLocaleCodeProvider(): array
+    {
+        return [
+            'valid' => ['de-AT', 'de-AT'],
+            'needs normalization' => [" en_gb \n", 'en-GB'],
+            'invalid is ignored' => ['english', ''],
+            'empty' => ['', ''],
+            'not set' => [null, ''],
+        ];
+    }
+
+    /**
+     * @dataProvider normalizeLocaleCodeProvider
+     */
+    public function testNormalizeLocaleCode(string $input, string $expected): void
+    {
+        $this->assertSame($expected, $this->helper([])->normalizeLocaleCode($input));
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public function normalizeLocaleCodeProvider(): array
+    {
+        return [
+            'already normalized' => ['en-GB', 'en-GB'],
+            'language only' => ['PL', 'pl'],
+            'underscore' => ['de_at', 'de-AT'],
+            'mixed case' => ['En-gB', 'en-GB'],
+            'whitespace' => ["  fr-ca\t", 'fr-CA'],
+            'empty' => ['', ''],
+            'invalid stays invalid' => ['eng_usa', 'eng-USA'],
+        ];
+    }
+
+    /**
+     * @dataProvider localeCodeValidityProvider
+     */
+    public function testIsValidLocaleCode(string $code, bool $expected): void
+    {
+        $this->assertSame($expected, $this->helper([])->isValidLocaleCode($code));
+    }
+
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public function localeCodeValidityProvider(): array
+    {
+        return [
+            'language' => ['en', true],
+            'language and region' => ['en-GB', true],
+            'other region' => ['de-AT', true],
+            'empty' => ['', false],
+            'three-letter language' => ['eng', false],
+            'three-letter region' => ['en-GBR', false],
+            'not normalized case' => ['en-gb', false],
+            'underscore' => ['en_GB', false],
+            'x-default is not a store code' => ['x-default', false],
+            'script subtag' => ['zh-Hant', false],
+            'digits' => ['e1', false],
+            'trailing newline' => ["en\n", false],
+        ];
+    }
+
+    public function testNormalizedCodesFromSpecAreValid(): void
+    {
+        $helper = $this->helper([]);
+
+        foreach (['pl', 'en', 'de-AT', 'EN_gb', 'en-gb'] as $input) {
+            $this->assertTrue($helper->isValidLocaleCode($helper->normalizeLocaleCode($input)), $input);
+        }
     }
 
     /**

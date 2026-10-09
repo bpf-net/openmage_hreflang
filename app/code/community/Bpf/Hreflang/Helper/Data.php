@@ -12,6 +12,8 @@ class Bpf_Hreflang_Helper_Data extends Mage_Core_Helper_Abstract
     public const GROUP_SCOPE_WEBSITE = 'website';
     public const GROUP_SCOPE_GLOBAL = 'global';
 
+    public const LOCALE_CODE_PATTERN = '/^[a-z]{2}(-[A-Z]{2})?$/D';
+
     /**
      * @param null|bool|int|string|Mage_Core_Model_Store $store
      */
@@ -21,13 +23,40 @@ class Bpf_Hreflang_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Hreflang code of the store view; empty string when the store does not take part.
+     * Hreflang code of the store view; empty string when the store does not take part
+     * (no code configured, or one that is not a valid hreflang code).
      *
      * @param null|bool|int|string|Mage_Core_Model_Store $store
      */
     public function getLocaleCode($store = null): string
     {
-        return trim((string) $this->_getConfig(self::XML_PATH_LOCALE_CODE, $store));
+        $code = $this->normalizeLocaleCode((string) $this->_getConfig(self::XML_PATH_LOCALE_CODE, $store));
+
+        return $this->isValidLocaleCode($code) ? $code : '';
+    }
+
+    /**
+     * Normalizes user input to hreflang form: "_" becomes "-", language lowercase, region uppercase.
+     * E.g. " EN_gb " → "en-GB". Does not validate.
+     */
+    public function normalizeLocaleCode(string $code): string
+    {
+        $parts = explode('-', str_replace('_', '-', trim($code)), 2);
+        $parts[0] = strtolower($parts[0]);
+        if (isset($parts[1])) {
+            $parts[1] = strtoupper($parts[1]);
+        }
+
+        return implode('-', $parts);
+    }
+
+    /**
+     * Whether the code is a normalized hreflang code: ISO 639-1 language, optionally
+     * followed by an ISO 3166-1 alpha-2 region ("en", "en-GB").
+     */
+    public function isValidLocaleCode(string $code): bool
+    {
+        return preg_match(self::LOCALE_CODE_PATTERN, $code) === 1;
     }
 
     /**
