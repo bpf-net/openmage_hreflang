@@ -147,6 +147,8 @@ Niespójności i luki w specyfikacji, które wpływają na kolejne commity:
 
 ## Faza 8 — testy integracyjne i CI
 
+> **Pominięta w 1.0** (decyzja z 2026-10-09): testy integracyjne w CI uznane za zbyt kosztowne. Zrealizowano tylko 8.10 (CI, uruchamiane dla tagów). Scenariusze 8.2–8.9 zweryfikowano ręcznie na DDEV — stan w SPEC p. 8.2; automatyzacja trafiła na roadmapę (SPEC p. 2.2).
+
 **8.1** Środowisko: `docker-compose` z OpenMage 20.x + sample data, skrypt fixture konfigurujący store `pl` (pod `/`), `en`, `de-AT`, `en-GB`, `x-default`; suite `integration` w PHPUnit z `BASE_URL` z env (skip gdy brak) i helperem parsującym `<link rel="alternate">` oraz `canonical`.
 `[Add integration test environment and fixtures]`
 
@@ -161,7 +163,7 @@ Każdy przypadek z p. 8.2 SPEC jako osobny commit:
 - **8.8** Cache: różne strony = różne tagi, zapis encji unieważnia cache. `[Test hreflang cache invalidation]`
 - **8.9** `en-GB` + `en`. `[Test same language in multiple regions]`
 
-**8.10** GitHub Actions: lint, PHPStan, PHPUnit `unit` na PHP 8.1/8.2/8.3.
+**8.10** ✅ GitHub Actions: lint, PHPStan, PHPUnit `unit` na PHP 8.2/8.3, tylko dla tagów `v*`.
 `[Add CI workflow for lint, analysis and unit tests]`
 
 **8.11** Job integracyjny w CI (docker-compose + suite `integration`).

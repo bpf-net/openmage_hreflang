@@ -31,6 +31,7 @@ Status: szkic, wersja dokumentu 2026-10-09.
 - Raport stron bez pary w adminie.
 - Komenda CLI `hreflang:audit`: crawl sitemap, pobranie alternate każdej strony, raport braku zwrotności, 404, przekierowań i niezgodności z canonical.
 - Resolvery dla konkretnych modułów bloga (przez event z p. 5.3).
+- Automatyczne testy integracyjne na sklepie z sample data (scenariusze z p. 8.2), uruchamiane lokalnie lub w CI.
 
 ## 3. Środowisko i identyfikacja
 
@@ -270,25 +271,27 @@ Każdy nowy katalog lub plik poza `app/code/community/Bpf/Hreflang` musi zostać
 - `Bpf_Hreflang_Model_Url`: tryb z kodem i bez kodu sklepu, HTTPS.
 - Builder: minimum 2 wersje, `x-default` obecny/nieobecny, zwrotność, wykluczenia z prefiksem `*`.
 
-### 8.2 Integracyjne (OpenMage 20.x + sample data)
-Każdy przypadek brzegowy jako osobny test (curl strony + parsowanie tagów):
+### 8.2 Integracyjne — poza zakresem 1.0
+Automatyczne testy integracyjne (OpenMage + sample data w CI) zostały pominięte w 1.0 jako zbyt kosztowne w utrzymaniu (decyzja z 2026-10-09; roadmapa p. 2.2). Scenariusze zweryfikowano ręcznie na sklepie testowym (DDEV, OpenMage 20.18, sample data, store'y en/fr/de); wyniki są w komentarzach do zamkniętych zgłoszeń #1–#7:
 
-1. Strona główna z domyślnym językiem pod `/` i pozostałymi pod `/en/` itd.: alternate i `x-default` wskazują dokładne adresy.
-2. Strona 404: brak tagów.
-3. Strona CMS w grupie tłumaczeń i strona przypisana do wszystkich store view.
-4. Zwrotność: produkt wyłączony w jednym store znika ze wszystkich wersji.
-5. Zgodność z canonical: href = `<link rel="canonical">` każdej wersji; strona z filtrami bez tagów.
-6. Strona `noindex` i store z domyślnym `NOINDEX`.
-7. Cache: dwie różne strony w tym samym store mają różne tagi; zapis produktu/kategorii/CMS unieważnia cache.
-8. Ten sam język w kilku krajach (`en-GB` + `en`).
+| # | Scenariusz | Wynik ręcznej weryfikacji |
+| --- | --- | --- |
+| 1 | Strona główna, `x-default` | ✅ dokładne adresy; tryb bez kodu sklepu (`root_stores`) sprawdzony tylko testami jednostkowymi |
+| 2 | Strona 404 | ✅ brak tagów, także na adresie strony CMS `no-route` |
+| 3 | Strona CMS w grupie i przypisana do wszystkich store view | ✅ |
+| 4 | Zwrotność: produkt wyłączony w jednym store | ✅ wersja znika ze wszystkich stron |
+| 5 | href = canonical; strona z filtrami bez tagów | ✅ |
+| 6 | Strona `noindex` i store z domyślnym `NOINDEX` | ✅ |
+| 7 | Cache: różne strony, unieważnianie | ✅ różne strony mają różne tagi, zapis grupy odświeża tagi; unieważnianie po zapisie produktu/kategorii/strony CMS opiera się na tagach encji rdzenia (sprawdzone testami jednostkowymi) |
+| 8 | Ten sam język w kilku krajach (`en-GB` + `en`) | ⏳ sprawdzone testami jednostkowymi (walidacja i builder), nie na sklepie |
 
 ### 8.3 CI
-GitHub Actions: lint PHP, PHPStan, PHPUnit na macierzy PHP 8.2/8.3.
+GitHub Actions: lint PHP, PHPStan, PHPUnit (sekcja 8.1) na macierzy PHP 8.2/8.3, uruchamiane tylko dla tagów `v*`. Przed każdym pushem to samo uruchamia lokalnie hook `pre-push`.
 
 ## 9. Kryteria ukończenia 1.0
 
 - [ ] Wszystkie pozycje z p. 2.1 zaimplementowane.
-- [ ] Testy z sekcji 8 przechodzą w CI.
+- [ ] Testy jednostkowe (p. 8.1) przechodzą w CI; scenariusze z p. 8.2 zweryfikowane ręcznie.
 - [ ] README: problem, instalacja (Composer + `modman`), konfiguracja, zrzuty z admina, ograniczenia, roadmapa.
 - [ ] `CHANGELOG.md`, plik `LICENSE`, tag `v1.0.0`.
 
