@@ -29,6 +29,12 @@
                         <cms_index_index/>
                     </actions>
                 </home>
+                <product>
+                    <class>bpf_hreflang/resolver_product</class>
+                    <actions>
+                        <catalog_product_view/>
+                    </actions>
+                </product>
             </resolvers>
         </bpf_hreflang>
     </global>
