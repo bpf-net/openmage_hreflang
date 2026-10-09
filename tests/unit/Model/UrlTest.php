@@ -31,10 +31,11 @@ class Bpf_Hreflang_Model_UrlTest extends TestCase
 
     /**
      * @param list<Mage_Core_Model_Store> $stores
+     * @param list<int> $rootStoreIds stores served without the store code
      * @param list<string> $extraMethods further protected methods to stub
      * @return Bpf_Hreflang_Model_Url&MockObject
      */
-    private function urlModel(array $stores, array $extraMethods = []): Bpf_Hreflang_Model_Url
+    private function urlModel(array $stores, array $rootStoreIds = [], array $extraMethods = []): Bpf_Hreflang_Model_Url
     {
         $byId = [];
         foreach ($stores as $store) {
@@ -42,9 +43,10 @@ class Bpf_Hreflang_Model_UrlTest extends TestCase
         }
 
         $model = $this->getMockBuilder(Bpf_Hreflang_Model_Url::class)
-            ->onlyMethods(array_merge(['_getStore'], $extraMethods))
+            ->onlyMethods(array_merge(['_getStore', '_getRootStoreIds'], $extraMethods))
             ->getMock();
         $model->method('_getStore')->willReturnCallback(static fn (int $id) => $byId[$id]);
+        $model->method('_getRootStoreIds')->willReturn($rootStoreIds);
 
         return $model;
     }
@@ -68,5 +70,20 @@ class Bpf_Hreflang_Model_UrlTest extends TestCase
         $model = $this->urlModel([$this->store(2, 'en', true, true)]);
 
         $this->assertSame('https://example.com/en/', $model->getHomeUrl(2));
+    }
+
+    public function testRootStoreHomeUrlHasNoStoreCode(): void
+    {
+        $model = $this->urlModel([$this->store(1, 'pl', true, true), $this->store(2, 'en', true, true)], [1]);
+
+        $this->assertSame('https://example.com/', $model->getHomeUrl(1));
+        $this->assertSame('https://example.com/en/', $model->getHomeUrl(2));
+    }
+
+    public function testRootStoreWithoutStoreCodeInUrlIsUnchanged(): void
+    {
+        $model = $this->urlModel([$this->store(1, 'pl', false, false)], [1]);
+
+        $this->assertSame('http://example.com/', $model->getHomeUrl(1));
     }
 }
