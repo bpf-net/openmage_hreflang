@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<config>
+    <tabs>
+        <bpf translate="label" module="bpf_hreflang">
+            <label>Bpf</label>
+            <sort_order>400</sort_order>
+        </bpf>
+    </tabs>
+    <sections>
+        <bpf_hreflang translate="label" module="bpf_hreflang">
+            <label>Hreflang</label>
+            <tab>bpf</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>10</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <general translate="label">
+                    <label>General</label>
+                    <sort_order>10</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <enabled translate="label">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </enabled>
+                        <locale_code translate="label comment">
+                            <label>Hreflang Code</label>
+                            <frontend_type>text</frontend_type>
+                            <comment>Language (ISO 639-1), optionally with region (ISO 3166-1 alpha-2), e.g. pl, en, en-GB, de-AT. Leave empty to exclude this store view.</comment>
+                            <sort_order>20</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </locale_code>
+                        <group_scope translate="label comment">
+                            <label>Alternates Scope</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>bpf_hreflang/system_config_source_groupScope</source_model>
+                            <comment>Which store views are listed as alternates of each other.</comment>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </group_scope>
+                        <x_default_store translate="label comment">
+                            <label>x-default Store View</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>bpf_hreflang/system_config_source_store</source_model>
+                            <comment>Store view whose URL is used as x-default. Leave empty to omit x-default.</comment>
+                            <sort_order>40</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </x_default_store>
+                        <excluded_actions translate="label comment">
+                            <label>Excluded Actions</label>
+                            <frontend_type>textarea</frontend_type>
+                            <comment>Full action names, one per line. A trailing * matches a prefix, e.g. checkout_*.</comment>
+                            <sort_order>50</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </excluded_actions>
+                    </fields>
+                </general>
+                <url translate="label">
+                    <label>URLs</label>
+                    <sort_order>20</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>0</show_in_website>
+                    <show_in_store>0</show_in_store>
+                    <fields>
+                        <root_stores translate="label comment">
+                            <label>Store Views Without Store Code in URL</label>
+                            <frontend_type>multiselect</frontend_type>
+                            <source_model>bpf_hreflang/system_config_source_store</source_model>
+                            <can_be_empty>1</can_be_empty>
+                            <comment>Store views served at the site root (e.g. the default language under /). Applies only when "Add Store Code to Urls" is enabled.</comment>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </root_stores>
+                    </fields>
+                </url>
+            </groups>
+        </bpf_hreflang>
+    </sections>
+</config>
