@@ -14,6 +14,7 @@ class Bpf_Hreflang_Block_HeadTest extends TestCase
     ];
 
     /**
+     * @param list<string> $resolverTags
      * @return Bpf_Hreflang_Block_Head&MockObject
      */
     private function block(
@@ -22,15 +23,20 @@ class Bpf_Hreflang_Block_HeadTest extends TestCase
         ?string $action = 'cms_index_index',
         bool $hasResolver = true,
         ?Bpf_Hreflang_Model_Builder $builder = null,
+        string $resolverKey = 'home',
+        array $resolverTags = [],
+        int $storeId = 1,
+        bool $secure = true,
     ): Bpf_Hreflang_Block_Head {
         $helper = $this->createMock(Bpf_Hreflang_Helper_Data::class);
         $helper->method('isEnabled')->willReturn($enabled);
 
         if ($builder === null) {
             $builder = $this->createMock(Bpf_Hreflang_Model_Builder::class);
-            $builder->method('getResolverForRequest')->willReturn(
-                $hasResolver ? $this->createMock(Bpf_Hreflang_Model_Resolver_Interface::class) : null,
-            );
+            $resolver = $this->createMock(Bpf_Hreflang_Model_Resolver_Interface::class);
+            $resolver->method('getCacheKey')->willReturn($resolverKey);
+            $resolver->method('getCacheTags')->willReturn($resolverTags);
+            $builder->method('getResolverForRequest')->willReturn($hasResolver ? $resolver : null);
             $builder->method('getAlternates')->willReturn(self::ALTERNATES);
         }
 
@@ -39,10 +45,13 @@ class Bpf_Hreflang_Block_HeadTest extends TestCase
             ->getMock();
         $block->method('_getHelper')->willReturn($helper);
         $block->method('_getBuilder')->willReturn($builder);
-        $block->method('_getStore')->willReturn(new Mage_Core_Model_Store(['store_id' => 1]));
+        $block->method('_getStore')->willReturn(new Mage_Core_Model_Store(['store_id' => $storeId]));
         $block->method('_getRobots')->willReturn($robots);
         $block->method('_getFullActionName')->willReturn($action);
-        $block->method('_getRequestObject')->willReturn($this->createMock(Mage_Core_Controller_Request_Http::class));
+        $request = $this->createMock(Mage_Core_Controller_Request_Http::class);
+        $request->method('isSecure')->willReturn($secure);
+        $block->method('_getRequestObject')->willReturn($request);
+        $block->setNameInLayout('bpf_hreflang.head');
 
         return $block;
     }
@@ -161,5 +170,54 @@ class Bpf_Hreflang_Block_HeadTest extends TestCase
         $this->assertSame('bpf_hreflang/head', (string) $block['type']);
         $this->assertSame('bpf/hreflang/head.phtml', (string) $block['template']);
         $this->assertFileExists(self::TEMPLATE);
+    }
+
+    public function testPagesWithoutResolverAreNotCached(): void
+    {
+        $this->assertNull($this->block(hasResolver: false)->getCacheLifetime());
+        $this->assertNull($this->block(enabled: false)->getCacheLifetime());
+        $this->assertNull($this->block(robots: 'NOINDEX,FOLLOW')->getCacheLifetime());
+    }
+
+    public function testResolvedPagesAreCached(): void
+    {
+        $this->assertSame(Bpf_Hreflang_Block_Head::CACHE_LIFETIME, $this->block()->getCacheLifetime());
+    }
+
+    public function testCacheKeyDependsOnStorePageAndProtocol(): void
+    {
+        $base = $this->block(action: 'catalog_product_view', resolverKey: 'product:42')->getCacheKey();
+
+        $this->assertSame($base, $this->block(action: 'catalog_product_view', resolverKey: 'product:42')->getCacheKey());
+        $this->assertNotSame($base, $this->block(action: 'catalog_product_view', resolverKey: 'product:43')->getCacheKey());
+        $this->assertNotSame($base, $this->block(action: 'catalog_category_view', resolverKey: 'product:42')->getCacheKey());
+        $this->assertNotSame($base, $this->block(action: 'catalog_product_view', resolverKey: 'product:42', storeId: 2)->getCacheKey());
+        $this->assertNotSame($base, $this->block(action: 'catalog_product_view', resolverKey: 'product:42', secure: false)->getCacheKey());
+    }
+
+    public function testCacheTagsIncludeResolvedEntities(): void
+    {
+        $tags = $this->block(resolverTags: ['catalog_product_42', 'bpf_hreflang'])->getCacheTags();
+
+        $this->assertEqualsCanonicalizing(
+            ['block_html', 'bpf_hreflang', 'CONFIG', 'catalog_product_42'],
+            $tags,
+        );
+    }
+
+    public function testConfigSaveCleansModuleCache(): void
+    {
+        $observer = $this->getMockBuilder(Bpf_Hreflang_Model_Observer::class)
+            ->onlyMethods(['_cleanCache'])
+            ->getMock();
+        $observer->expects($this->once())->method('_cleanCache');
+
+        $observer->cleanCacheOnConfigSave(new Varien_Event_Observer());
+
+        $config = simplexml_load_file(__DIR__ . '/../../../app/code/community/Bpf/Hreflang/etc/config.xml');
+        $registered = $config->xpath('adminhtml/events/admin_system_config_section_save_after/observers/*');
+        $this->assertCount(1, $registered);
+        $this->assertSame('bpf_hreflang/observer', (string) $registered[0]->class);
+        $this->assertSame('cleanCacheOnConfigSave', (string) $registered[0]->method);
     }
 }

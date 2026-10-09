@@ -5,6 +5,10 @@
  */
 class Bpf_Hreflang_Block_Head extends Mage_Core_Block_Template
 {
+    public const CACHE_TAG = 'bpf_hreflang';
+
+    public const CACHE_LIFETIME = 86400;
+
     /** @var array<string, string>|null */
     protected ?array $_alternates = null;
 
@@ -27,6 +31,55 @@ class Bpf_Hreflang_Block_Head extends Mage_Core_Block_Template
         }
 
         return $this->_alternates;
+    }
+
+    /**
+     * Cached only for pages a resolver handles; everything else is rendered (as an empty string)
+     * without touching the cache.
+     *
+     * @return int|null
+     */
+    public function getCacheLifetime()
+    {
+        return $this->_getResolver() ? self::CACHE_LIFETIME : null;
+    }
+
+    /**
+     * Store view, page (action + resolver key) and HTTPS, which changes nothing in the URLs
+     * but keeps secure and insecure renders apart.
+     *
+     * @return array<int|string, string>
+     */
+    public function getCacheKeyInfo()
+    {
+        $resolver = $this->_getResolver();
+        $request = $this->_getRequestObject();
+
+        return [
+            'BPF_HREFLANG',
+            (string) $this->getNameInLayout(),
+            (string) $this->_getStore()->getId(),
+            (string) $this->_getFullActionName(),
+            $resolver ? $resolver->getCacheKey($request) : '',
+            $request->isSecure() ? 'https' : 'http',
+        ];
+    }
+
+    /**
+     * Tags of the resolved entities, the module tag (cleaned on config save and when translation
+     * groups change) and the config tag.
+     *
+     * @return list<string>
+     */
+    public function getCacheTags()
+    {
+        $resolver = $this->_getResolver();
+        $tags = [self::CACHE_GROUP, self::CACHE_TAG, Mage_Core_Model_Config::CACHE_TAG];
+        if ($resolver) {
+            $tags = array_merge($tags, $resolver->getCacheTags($this->_getRequestObject()));
+        }
+
+        return array_values(array_unique($tags));
     }
 
     protected function _toHtml()

@@ -41,6 +41,18 @@
             </updates>
         </layout>
     </frontend>
+    <adminhtml>
+        <events>
+            <admin_system_config_section_save_after>
+                <observers>
+                    <bpf_hreflang_clean_cache>
+                        <class>bpf_hreflang/observer</class>
+                        <method>cleanCacheOnConfigSave</method>
+                    </bpf_hreflang_clean_cache>
+                </observers>
+            </admin_system_config_section_save_after>
+        </events>
+    </adminhtml>
     <default>
         <bpf_hreflang>
             <general>

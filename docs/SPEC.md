@@ -154,7 +154,7 @@ Zasady:
 - Klasa `Bpf_Hreflang_Block_Head`, dodana w `layout/bpf_hreflang.xml` jako dziecko `head` w handle `default`; renderuje się przez `getChildHtml()` w szablonie `head`.
 - Szablon `bpf/hreflang/head.phtml` wypisuje tagi, wartości URL escapowane (`escapeUrl`).
 - Klucz cache: store ID, pełna nazwa akcji, `getCacheKey()` resolvera, flaga HTTPS.
-- Tagi cache: tagi z `getCacheTags()` + `bpf_hreflang` + `config`. Zapis grupy tłumaczeń czyści tag `bpf_hreflang`.
+- Tagi cache: tagi z `getCacheTags()` + `bpf_hreflang` + `config`. Zapis grupy tłumaczeń i zapis dowolnej sekcji konfiguracji w adminie (observer na `admin_system_config_section_save_after`; na URL-e wpływają też ustawienia spoza modułu, np. base URL, `web/url/use_store`, robots, strona główna CMS) czyści tag `bpf_hreflang`. Czas życia wpisu: 1 doba.
 - Gdy żaden resolver nie obsługuje strony, blok zwraca pusty string bez zapisu do cache.
 
 ### 5.6 Budowa URL-i
