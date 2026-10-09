@@ -141,4 +141,17 @@ class Bpf_Hreflang_Model_UrlTest extends TestCase
 
         $this->assertSame([], $method->invoke(new Bpf_Hreflang_Model_Url(), 'product/42', []));
     }
+
+    public function testCategoryUrlsUseEachStoresRewrite(): void
+    {
+        $model = $this->urlModelWithRewrites(
+            ['category/7' => [1 => 'kubki.html', 2 => 'mugs.html'], 'product/7' => [1 => 'not-a-category.html']],
+            [1],
+        );
+
+        $this->assertSame([
+            1 => 'https://example.com/kubki.html',
+            2 => 'https://example.com/en/mugs.html',
+        ], $model->getCategoryUrls(7, [1, 2, 3]));
+    }
 }

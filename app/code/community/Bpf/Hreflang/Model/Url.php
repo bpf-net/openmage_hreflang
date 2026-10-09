@@ -30,6 +30,17 @@ class Bpf_Hreflang_Model_Url
     }
 
     /**
+     * Category URLs from each store's URL rewrite. Stores without a rewrite for the category are left out.
+     *
+     * @param list<int> $storeIds
+     * @return array<int, string> store ID => absolute URL
+     */
+    public function getCategoryUrls(int $categoryId, array $storeIds): array
+    {
+        return $this->_getUrlsByIdPath('category/' . $categoryId, $storeIds);
+    }
+
+    /**
      * @param list<int> $storeIds
      * @return array<int, string> store ID => absolute URL
      */
