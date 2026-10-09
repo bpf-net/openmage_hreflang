@@ -2,7 +2,7 @@
 
 Moduł OpenMage 20.x generujący tagi `<link rel="alternate" hreflang="…">` dla sklepów wielojęzycznych (wiele store view), instalowany przez Composer.
 
-Status: szkic, wersja dokumentu 2026-10-09.
+Status: zrealizowana w wersji 1.0.0 (2026-10-10). Przebieg prac i decyzje: `docs/PLAN.md`.
 
 ## 1. Problem
 
@@ -290,13 +290,13 @@ GitHub Actions: lint PHP, PHPStan, PHPUnit (sekcja 8.1) na macierzy PHP 8.2/8.3,
 
 ## 9. Kryteria ukończenia 1.0
 
-- [ ] Wszystkie pozycje z p. 2.1 zaimplementowane.
-- [ ] Testy jednostkowe (p. 8.1) przechodzą w CI; scenariusze z p. 8.2 zweryfikowane ręcznie.
-- [ ] README: problem, instalacja (Composer + `modman`), konfiguracja, zrzuty z admina, ograniczenia, roadmapa.
-- [ ] `CHANGELOG.md`, plik `LICENSE`, tag `v1.0.0`.
+- [x] Wszystkie pozycje z p. 2.1 zaimplementowane.
+- [x] Testy jednostkowe (p. 8.1) przechodzą w CI; scenariusze z p. 8.2 zweryfikowane ręcznie.
+- [x] README: problem, instalacja (Composer + `modman`), konfiguracja, grupy tłumaczeń, ograniczenia, roadmapa. Zrzuty z admina pominięte w 1.0 (nie udało się ich wykonać automatycznie; decyzja z 2026-10-10).
+- [x] `CHANGELOG.md`, plik `LICENSE`, tag `v1.0.0`.
 
-## 10. Otwarte pytania
+## 10. Otwarte pytania (rozstrzygnięte w 1.0)
 
-1. Paginacja kategorii: w 1.0 strony z parametrami nie mają tagów. Czy `?p=2` powinno emitować alternate do `?p=2` w innych językach?
-2. `group_scope`: czy przypadek „osobne website per kraj, wspólne alternatywy” jest potrzebny w 1.0, czy wystarczy `website`?
-3. Nazwa pakietu: `bpf/openmage_hreflang` czy `bpf/openmage-hreflang` (zmienić przed publikacją na Packagist)?
+1. Paginacja kategorii: w 1.0 strony z parametrami (w tym `?p=2`) nie mają tagów. Alternate dla kolejnych stron listingu — kandydat na kolejną wersję.
+2. `group_scope`: zrealizowane obie wartości — `website` (domyślnie) i `global`; przejście na `global` wymaga unikalnych kodów we wszystkich store view.
+3. Nazwa pakietu: `bpf/openmage-hreflang` (myślnik, konwencja Composera); repozytorium GitHub zostaje `bpf-net/openmage_hreflang`.

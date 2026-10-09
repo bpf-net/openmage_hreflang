@@ -2,9 +2,13 @@
 
 All notable changes to this module are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [1.0.0] - 2026-10-09
+## [1.0.0] - 2026-10-10
 
 First stable release.
+
+### Changed
+
+- The Composer package is now `bpf/openmage-hreflang` (was `bpf/openmage_hreflang`); update the `require` of your shop.
 
 ### Added
 
