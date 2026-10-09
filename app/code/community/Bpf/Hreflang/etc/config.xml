@@ -22,4 +22,21 @@
             </bpf_hreflang>
         </helpers>
     </global>
+    <default>
+        <bpf_hreflang>
+            <general>
+                <enabled>0</enabled>
+                <group_scope>website</group_scope>
+                <excluded_actions>cms_index_noRoute
+cms_index_defaultNoRoute
+catalogsearch_*
+checkout_*
+customer_*
+wishlist_*
+sales_*
+review_*
+contacts_*</excluded_actions>
+            </general>
+        </bpf_hreflang>
+    </default>
 </config>
