@@ -62,8 +62,21 @@ class Bpf_Hreflang_Model_Group extends Mage_Core_Model_Abstract
         return $this->setData('items', $normalized);
     }
 
+    public function getValidator(): Bpf_Hreflang_Model_Group_Validator
+    {
+        return Mage::getSingleton('bpf_hreflang/group_validator');
+    }
+
+    /**
+     * @throws Mage_Core_Exception when the group breaks the translation group rules
+     */
     protected function _beforeSave()
     {
+        $errors = $this->getValidator()->validate($this);
+        if ($errors !== []) {
+            Mage::throwException(implode(' ', $errors));
+        }
+
         $now = Varien_Date::now();
         if ($this->isObjectNew() || !$this->getId()) {
             $this->setCreatedAt($now);

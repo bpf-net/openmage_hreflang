@@ -61,8 +61,18 @@ class Bpf_Hreflang_Adminhtml_Bpf_Hreflang_GroupController extends Mage_Adminhtml
             return;
         }
 
+        $this->_applyPostData($group, $data);
+        $errors = $group->getValidator()->validate($group);
+        if ($errors !== []) {
+            foreach ($errors as $error) {
+                $this->_getSession()->addError($error);
+            }
+            $this->_getSession()->setData(self::FORM_DATA_KEY, $data);
+            $this->_redirect('*/*/edit', $group->getId() ? ['id' => $group->getId()] : []);
+            return;
+        }
+
         try {
-            $this->_applyPostData($group, $data);
             $group->save();
 
             $this->_getSession()->addSuccess($helper->__('The translation group has been saved.'));
