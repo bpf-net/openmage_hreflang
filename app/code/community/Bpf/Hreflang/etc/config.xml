@@ -5,4 +5,21 @@
             <version>0.1.1</version>
         </Bpf_Hreflang>
     </modules>
+    <global>
+        <models>
+            <bpf_hreflang>
+                <class>Bpf_Hreflang_Model</class>
+            </bpf_hreflang>
+        </models>
+        <blocks>
+            <bpf_hreflang>
+                <class>Bpf_Hreflang_Block</class>
+            </bpf_hreflang>
+        </blocks>
+        <helpers>
+            <bpf_hreflang>
+                <class>Bpf_Hreflang_Helper</class>
+            </bpf_hreflang>
+        </helpers>
+    </global>
 </config>
