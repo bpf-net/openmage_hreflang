@@ -88,7 +88,25 @@
             </updates>
         </layout>
     </frontend>
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <Bpf_Hreflang before="Mage_Adminhtml">Bpf_Hreflang_Adminhtml</Bpf_Hreflang>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
     <adminhtml>
+        <layout>
+            <updates>
+                <bpf_hreflang>
+                    <file>bpf_hreflang.xml</file>
+                </bpf_hreflang>
+            </updates>
+        </layout>
         <events>
             <admin_system_config_section_save_after>
                 <observers>

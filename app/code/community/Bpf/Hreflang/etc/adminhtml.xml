@@ -1,9 +1,28 @@
 <?xml version="1.0"?>
 <config>
+    <menu>
+        <cms>
+            <children>
+                <bpf_hreflang translate="title" module="bpf_hreflang">
+                    <title>Hreflang Translation Groups</title>
+                    <action>adminhtml/bpf_hreflang_group</action>
+                    <sort_order>90</sort_order>
+                </bpf_hreflang>
+            </children>
+        </cms>
+    </menu>
     <acl>
         <resources>
             <admin>
                 <children>
+                    <cms>
+                        <children>
+                            <bpf_hreflang translate="title" module="bpf_hreflang">
+                                <title>Hreflang Translation Groups</title>
+                                <sort_order>90</sort_order>
+                            </bpf_hreflang>
+                        </children>
+                    </cms>
                     <system>
                         <children>
                             <config>

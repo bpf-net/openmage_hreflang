@@ -256,7 +256,7 @@ app/code/community/Bpf/Hreflang/
     sql/bpf_hreflang_setup/install-1.0.0.php
 app/design/frontend/base/default/layout/bpf_hreflang.xml
 app/design/frontend/base/default/template/bpf/hreflang/head.phtml
-app/design/adminhtml/default/default/layout/bpf_hreflang.xml
+app/design/adminhtml/base/default/layout/bpf_hreflang.xml   (OpenMage 20: admin layouts in base/default)
 app/locale/en_US/Bpf_Hreflang.csv
 app/locale/pl_PL/Bpf_Hreflang.csv
 ```
